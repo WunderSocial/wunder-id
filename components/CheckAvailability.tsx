@@ -26,8 +26,8 @@ const CheckAvailability = ({
         loading={isLoading}
       />
       {isLoading && <ActivityIndicator style={{ marginTop: 12 }} />}
-      {isAvailable === true && <Text style={styles.available}>✅ It's available</Text>}
-      {isAvailable === false && <Text style={styles.taken}>❌ That is taken</Text>}
+      {isAvailable === true && <Text style={styles.available}>✅ Available, Claim now!</Text>}
+      {isAvailable === false && <Text style={styles.taken}>❌ Not available, try again</Text>}
     </View>
   );
 };

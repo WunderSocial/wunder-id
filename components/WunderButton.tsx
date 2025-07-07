@@ -35,11 +35,12 @@ const WunderButton = ({ title, onPress, disabled, loading, variant = 'primary', 
 
 const styles = StyleSheet.create({
   button: {
-    paddingVertical: 14,
-    borderRadius: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
-    minHeight: 52,
+  paddingVertical: 14,
+  paddingHorizontal: 24, // 👈 add this
+  borderRadius: 12,
+  alignItems: 'center',
+  justifyContent: 'center',
+  minHeight: 52,
   },
   primary: {
     backgroundColor: '#fff403',

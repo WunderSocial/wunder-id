@@ -1,6 +1,12 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, Button, ActivityIndicator } from 'react-native';
+import { Text, StyleSheet} from 'react-native';
+import BodyContainer from '@components/BodyContainer';
+import HeaderContainer from '@components/HeaderContainer';
+import Logo from '@components/WunderLogo';
 import WunderInput from '@components/WunderInput';
+import WunderButton from '@components/WunderButton';
+import { useNavigation } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import CheckAvailability from '@components/CheckAvailability';
 import { checkENSAvailability } from '@lib/ens';
 
@@ -16,24 +22,45 @@ const UsernameScreen = () => {
     setIsChecking(false);
   };
 
+  const navigation = useNavigation();
+
+  const footer = (
+  <WunderButton
+    title="Claim Username"
+    onPress={async () => {
+      await AsyncStorage.setItem('username', username);
+      navigation.navigate('PasswordSetup' as never);
+    }}
+    disabled={!isAvailable}
+  />
+);
+
   return (
-    <View style={styles.container}>
-      <Text style={styles.heading}>Choose your Wunder ID</Text>
-      <WunderInput
-        placeholder="username"
-        value={username}
-        onChangeText={(text) => {
-          setUsername(text);
-          setIsAvailable(null); // reset availability on edit
-        }}
-      />
-      <CheckAvailability
-        isLoading={isChecking}
-        isAvailable={isAvailable}
-        onCheck={handleCheck}
-        disabled={!username}
-      />
-    </View>
+    <BodyContainer header={
+    <HeaderContainer>
+      <Logo />
+    </HeaderContainer>
+    }
+    footer={footer}
+  >
+    <Text style={styles.heading}>Choose your Wunder ID</Text>
+    <WunderInput
+      placeholder="username"
+      keyboardType="default"
+      value={username}
+      onChangeText={(text) => {
+        setUsername(text);
+        setIsAvailable(null);
+      }}
+    />
+    <CheckAvailability
+      isLoading={isChecking}
+      isAvailable={isAvailable}
+      onCheck={handleCheck}
+      disabled={!username}
+    />
+    
+  </BodyContainer>
   );
 };
 
@@ -63,6 +90,10 @@ const styles = StyleSheet.create({
     fontSize: 16,
     textAlign: 'center',
   },
+  TextInput: {
+    borderColor: 'red', // 🔍
+  borderWidth: 1,
+  }
 });
 
 export default UsernameScreen;

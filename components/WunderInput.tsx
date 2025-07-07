@@ -5,19 +5,22 @@ interface Props {
   label?: string;
   placeholder?: string;
   value: string;
+  keyboardType?: 'default' | 'email-address' | 'numeric' | 'phone-pad' | 'number-pad';
   onChangeText: (text: string) => void;
 }
 
-const WunderInput = ({ label, placeholder, value, onChangeText }: Props) => {
+const WunderInput = ({ label, placeholder, value, keyboardType = 'default', onChangeText }: Props) => {
   return (
     <View style={styles.container}>
       {label && <Text style={styles.label}>{label}</Text>}
       <TextInput
         style={styles.input}
         placeholder={placeholder}
+        placeholderTextColor="#888"
         autoCapitalize="none"
         value={value}
         onChangeText={onChangeText}
+        keyboardType={keyboardType}
       />
     </View>
   );
