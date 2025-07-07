@@ -7,9 +7,10 @@ interface Props {
   value: string;
   keyboardType?: 'default' | 'email-address' | 'numeric' | 'phone-pad' | 'number-pad';
   onChangeText: (text: string) => void;
+  secureTextEntry?: boolean;
 }
 
-const WunderInput = ({ label, placeholder, value, keyboardType = 'default', onChangeText }: Props) => {
+const WunderInput = ({ label, placeholder, value, keyboardType = 'default', onChangeText, secureTextEntry }: Props) => {
   return (
     <View style={styles.container}>
       {label && <Text style={styles.label}>{label}</Text>}
@@ -21,6 +22,7 @@ const WunderInput = ({ label, placeholder, value, keyboardType = 'default', onCh
         value={value}
         onChangeText={onChangeText}
         keyboardType={keyboardType}
+        secureTextEntry={secureTextEntry}
       />
     </View>
   );
