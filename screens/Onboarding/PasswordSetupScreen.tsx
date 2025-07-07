@@ -26,15 +26,11 @@ const handleNext = async () => {
     setLoading(true);
 
     const mnemonic = bip39.generateMnemonic();
-    console.log('Generated mnemonic:', mnemonic);
-
     const encryptedSeed = await encryptSeed(mnemonic, password);
-    console.log('Encrypted seed:', encryptedSeed);
 
     await SecureStore.setItemAsync('encryptedSeed', encryptedSeed);
-    console.log('Seed saved.');
 
-    Alert.alert('Success', 'Password and seed saved.');
+    navigation.navigate('SetPin' as never);
   } catch (error) {
     console.error('Error in handleNext:', error);
     Alert.alert('Something went wrong', String(error));
@@ -42,7 +38,6 @@ const handleNext = async () => {
     setLoading(false);
   }
 };
-
 
   return (
     <BodyContainer
