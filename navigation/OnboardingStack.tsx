@@ -5,6 +5,7 @@ import UsernameScreen from '@screens/Onboarding/UsernameScreen';
 import PasswordSetupScreen from '@screens/Onboarding/PasswordSetupScreen';
 import SetPinScreen from '@screens/Onboarding/SetPinScreen';
 import ConfirmPinScreen from '@screens/Onboarding/ConfirmPinScreen';
+import HomeScreen from '@screens/Onboarding/HomeScreen';
 
 const Stack = createNativeStackNavigator<OnboardingStackParamList>();
 
@@ -15,6 +16,7 @@ const OnboardingStack = () => {
       <Stack.Screen name="PasswordSetup" component={PasswordSetupScreen} />
       <Stack.Screen name="SetPin" component={SetPinScreen} />
       <Stack.Screen name="ConfirmPin" component={ConfirmPinScreen} />
+      <Stack.Screen name="Home" component={HomeScreen} />
 
     </Stack.Navigator>
   );

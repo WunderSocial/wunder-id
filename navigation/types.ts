@@ -3,4 +3,5 @@ export type OnboardingStackParamList = {
   PasswordSetup: undefined;
   SetPin: undefined;
   ConfirmPin: { pin: string };
+  Home: undefined;
 };

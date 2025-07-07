@@ -6,6 +6,7 @@ import Logo from '@components/WunderLogo';
 import PinInput from '@components/PinInput';
 import WunderButton from '@components/WunderButton';
 import * as SecureStore from 'expo-secure-store';
+import * as LocalAuthentication from 'expo-local-authentication';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { OnboardingStackParamList } from '@navigation/types';
 
@@ -24,8 +25,41 @@ const ConfirmPinScreen = ({ navigation, route }: Props) => {
 
     try {
       await SecureStore.setItemAsync('userPin', confirmPin);
-      Alert.alert('Success', 'PIN set successfully');
-      navigation.navigate('NextStep'); // ⬅ Replace with your actual next screen
+
+      const hasHardware = await LocalAuthentication.hasHardwareAsync();
+      const isEnrolled = await LocalAuthentication.isEnrolledAsync();
+
+      if (hasHardware && isEnrolled) {
+        Alert.alert(
+          'Enable Face ID / Touch ID?',
+          'Would you like to enable biometric login for faster access?',
+          [
+            {
+              text: 'No',
+              onPress: () => navigation.replace('Home'),
+              style: 'cancel',
+            },
+            {
+              text: 'Yes',
+              onPress: async () => {
+                const result = await LocalAuthentication.authenticateAsync({
+                  promptMessage: 'Authenticate to enable biometrics',
+                });
+
+                if (result.success) {
+                  await SecureStore.setItemAsync('biometricsEnabled', 'true');
+                } else {
+                  await SecureStore.deleteItemAsync('biometricsEnabled');
+                }
+
+                navigation.replace('Home');
+              },
+            },
+          ]
+        );
+      } else {
+        navigation.replace('Home');
+      }
     } catch (err) {
       Alert.alert('Error', 'Failed to save PIN securely');
     }
