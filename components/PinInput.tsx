@@ -1,5 +1,5 @@
-import React, { useRef } from 'react';
-import { View, TextInput, StyleSheet, TextInputProps } from 'react-native';
+import React, { useRef, useEffect, forwardRef, useImperativeHandle, useState } from 'react';
+import { View, TextInput, StyleSheet, Animated } from 'react-native';
 
 interface Props {
   value: string;
@@ -7,30 +7,73 @@ interface Props {
   length?: number;
 }
 
-const PinInput = ({ value, onChange, length = 6 }: Props) => {
+export interface PinInputRef {
+  focusFirst: () => void;
+  triggerShake: () => void;
+}
+
+const PinInput = forwardRef<PinInputRef, Props>(({ value, onChange, length = 6 }, ref) => {
   const inputs = useRef<(TextInput | null)[]>([]);
+  const shakeAnim = useRef(new Animated.Value(0)).current;
+
+  useImperativeHandle(ref, () => ({
+    focusFirst: () => {
+      inputs.current[0]?.focus();
+    },
+    triggerShake: () => {
+      Animated.sequence([
+        Animated.timing(shakeAnim, { toValue: 10, duration: 50, useNativeDriver: true }),
+        Animated.timing(shakeAnim, { toValue: -10, duration: 50, useNativeDriver: true }),
+        Animated.timing(shakeAnim, { toValue: 6, duration: 50, useNativeDriver: true }),
+        Animated.timing(shakeAnim, { toValue: -6, duration: 50, useNativeDriver: true }),
+        Animated.timing(shakeAnim, { toValue: 3, duration: 50, useNativeDriver: true }),
+        Animated.timing(shakeAnim, { toValue: -3, duration: 50, useNativeDriver: true }),
+        Animated.timing(shakeAnim, { toValue: 0, duration: 50, useNativeDriver: true }),
+      ]).start();
+    }
+  }));
+
+  useEffect(() => {
+    if (inputs.current[0]) {
+      inputs.current[0].focus();
+    }
+  }, []);
 
   const handleChange = (text: string, index: number) => {
     const newValue = value.split('');
     if (text) {
       newValue[index] = text;
+      const updated = newValue.join('').slice(0, length);
+      onChange(updated);
+      if (index < length - 1) {
+        inputs.current[index + 1]?.focus();
+      }
+    } else {
+      newValue[index] = '';
       onChange(newValue.join('').slice(0, length));
-      if (index < length - 1) inputs.current[index + 1]?.focus();
     }
   };
 
   const handleKeyPress = (e: any, index: number) => {
-    if (e.nativeEvent.key === 'Backspace' && !value[index] && index > 0) {
-      inputs.current[index - 1]?.focus();
+    if (e.nativeEvent.key === 'Backspace') {
+      if (value[index]) {
+        const newValue = value.split('');
+        newValue[index] = '';
+        onChange(newValue.join('').slice(0, length));
+      } else if (index > 0) {
+        inputs.current[index - 1]?.focus();
+      }
     }
   };
 
   return (
-    <View style={styles.container}>
+    <Animated.View style={[styles.container, { transform: [{ translateX: shakeAnim }] }]}> 
       {Array.from({ length }).map((_, index) => (
         <TextInput
           key={index}
-          ref={(el) => (inputs.current[index] = el)}
+          ref={(el) => {
+            inputs.current[index] = el;
+          }}
           style={styles.box}
           keyboardType="number-pad"
           maxLength={1}
@@ -40,9 +83,9 @@ const PinInput = ({ value, onChange, length = 6 }: Props) => {
           onKeyPress={(e) => handleKeyPress(e, index)}
         />
       ))}
-    </View>
+    </Animated.View>
   );
-};
+});
 
 const styles = StyleSheet.create({
   container: {
