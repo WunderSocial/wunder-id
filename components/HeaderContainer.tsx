@@ -7,20 +7,28 @@ interface Props {
 }
 
 const HeaderContainer = ({ children }: Props) => {
-  return <SafeAreaView style={styles.container}>
-    {children}
-    </SafeAreaView>;
+  return (
+    <SafeAreaView style={styles.container}>
+      <View style={styles.row}>
+        {children}
+      </View>
+    </SafeAreaView>
+  );
 };
 
 const styles = StyleSheet.create({
   container: {
     width: '100%',
     backgroundColor: 'black',
-    alignItems: 'center',
     paddingTop: 32,
     paddingBottom: 36,
-    height: 120,
     zIndex: 10,
+  },
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
   },
 });
 

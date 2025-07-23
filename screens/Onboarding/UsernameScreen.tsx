@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Text, StyleSheet } from 'react-native';
+import { Text, StyleSheet, Pressable } from 'react-native';
 import BodyContainer from '@components/BodyContainer';
 import HeaderContainer from '@components/HeaderContainer';
 import Logo from '@components/WunderLogo';
@@ -9,20 +9,36 @@ import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as SecureStore from 'expo-secure-store';
 import CheckAvailability from '@components/CheckAvailability';
-import { checkENSAvailability } from '@lib/ens';
+import { useConvex } from 'convex/react';
+import { api } from '../../convex/_generated/api';
+
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import type { OnboardingStackParamList } from '@navigation/types';
+
+type NavigationProp = NativeStackNavigationProp<OnboardingStackParamList, 'Username'>;
 
 const UsernameScreen = () => {
   const [username, setUsername] = useState('');
   const [isChecking, setIsChecking] = useState(false);
   const [isAvailable, setIsAvailable] = useState<boolean | null>(null);
 
-  const navigation = useNavigation();
+  const navigation = useNavigation<NavigationProp>();
+  const convex = useConvex();
 
   const handleCheck = async () => {
+    if (!username) return;
     setIsChecking(true);
-    const available = await checkENSAvailability(username);
-    setIsAvailable(available);
-    setIsChecking(false);
+    try {
+      const available = await convex.query(api.checkUsernameAvailable.checkUsernameAvailable, {
+        username,
+      });
+      setIsAvailable(available);
+    } catch (err) {
+      console.error('Error checking username availability:', err);
+      setIsAvailable(false);
+    } finally {
+      setIsChecking(false);
+    }
   };
 
   const handleClaim = async () => {
@@ -30,7 +46,7 @@ const UsernameScreen = () => {
     const fullWunderId = `${username}.wunderid.eth`;
     await SecureStore.setItemAsync('wunderId', fullWunderId);
     console.log('🔐 Stored Wunder ID:', fullWunderId);
-    navigation.navigate('PasswordSetup' as never);
+    navigation.navigate('PasswordSetup');
   };
 
   const footer = (
@@ -66,6 +82,10 @@ const UsernameScreen = () => {
         onCheck={handleCheck}
         disabled={!username}
       />
+
+      <Pressable onPress={() => navigation.navigate('RestoreAccount')}>
+        <Text style={styles.link}>Already have an account?</Text>
+      </Pressable>
     </BodyContainer>
   );
 };
@@ -77,6 +97,13 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     marginBottom: 24,
     textAlign: 'center',
+  },
+  link: {
+    color: '#fff403',
+    fontSize: 14,
+    textAlign: 'center',
+    marginTop: 20,
+    textDecorationLine: 'underline',
   },
 });
 
