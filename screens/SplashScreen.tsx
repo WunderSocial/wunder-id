@@ -14,16 +14,16 @@ const SplashScreen = ({ navigation }: Props) => {
       const biometricsEnabled = await SecureStore.getItemAsync('biometricsEnabled');
       const storedPin = await SecureStore.getItemAsync('userPin');
 
-//       await SecureStore.deleteItemAsync('walletAddress');
-// await SecureStore.deleteItemAsync('encryptedSeed');
-// await SecureStore.deleteItemAsync('encryptedPrivateKey');
-// await SecureStore.deleteItemAsync('passwordHash');
-// await SecureStore.deleteItemAsync('convexUserId');
-// await SecureStore.deleteItemAsync('decryptionKey');
-// await SecureStore.deleteItemAsync('wunderId');
-// await SecureStore.deleteItemAsync('hashedDeviceFingerprint');
-// await SecureStore.deleteItemAsync('restoredSeedPhrase');
-// await SecureStore.deleteItemAsync('isRestoring');
+      // await SecureStore.deleteItemAsync('walletAddress');
+      // await SecureStore.deleteItemAsync('encryptedSeed');
+      // await SecureStore.deleteItemAsync('encryptedPrivateKey');
+      // await SecureStore.deleteItemAsync('passwordHash');
+      // await SecureStore.deleteItemAsync('convexUserId');
+      // await SecureStore.deleteItemAsync('decryptionKey');
+      // await SecureStore.deleteItemAsync('wunderId');
+      // await SecureStore.deleteItemAsync('hashedDeviceFingerprint');
+      // await SecureStore.deleteItemAsync('restoredSeedPhrase');
+      // await SecureStore.deleteItemAsync('isRestoring');
 
 
       if (!encryptedSeed) {

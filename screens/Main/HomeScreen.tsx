@@ -6,6 +6,7 @@ import LoggedInHeader from '@components/LoggedInHeader';
 import WunderButton from '@components/WunderButton';
 import { resetAppState } from '@lib/reset';
 import IdentityCards from '@components/Main/IdentityCards'; 
+//import LoginRequestBanner from '@components/LoginRequestBanner';
 
 const HomeScreen = () => {
 
@@ -13,6 +14,7 @@ const HomeScreen = () => {
     <View style={styles.container}>
       <LoggedInHeader />
       <ScrollableContainer>
+        {/* <LoginRequestBanner /> */}
         <IdentityCards />
       </ScrollableContainer>
       <FooterMenu />
