@@ -11,7 +11,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 const menuItems = [
   { name: 'Home', icon: 'home' },
   { name: 'Wallet', icon: 'credit-card' },
-  { name: 'Profile', icon: 'user' },
+  { name: 'Menu', icon: 'settings' }, // replaces Profile with cog icon
 ];
 
 const FooterMenu = () => {

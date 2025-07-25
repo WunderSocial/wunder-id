@@ -14,8 +14,8 @@ import WunderButton from '@components/WunderButton';
 import RevealWalletDetails from '@components/Main/RevealWalletDetails';
 import { decryptSeed } from '@lib/crypto';
 import ScrollableContainer from '@components/ScrollableContainer';
-import LoggedInHeader from '@components/LoggedInHeader';
-import FooterMenu from '@components/FooterMenu';
+import LoggedInHeader from '@components/Main/LoggedInHeader';
+import FooterMenu from '@components/Main/FooterMenu';
 
 const MAX_ATTEMPTS = 3;
 const TIMEOUT_MS = 5 * 60 * 1000;

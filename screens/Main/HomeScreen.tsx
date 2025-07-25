@@ -1,9 +1,10 @@
 import React from 'react';
 import { StyleSheet, Text, View, Alert } from 'react-native';
 import ScrollableContainer from '@components/ScrollableContainer';
-import FooterMenu from '@components/FooterMenu';
-import LoggedInHeader from '@components/LoggedInHeader';
-import IdentityCards from '@components/Main/IdentityCards'; 
+import FooterMenu from '@components/Main/FooterMenu';
+import LoggedInHeader from '@components/Main/LoggedInHeader';
+import WunderIdCard from '@components/Main/wunderIdCard';
+import CredentialCards from '@components/Main/credentialCards';
 
 const HomeScreen = () => {
 
@@ -11,7 +12,8 @@ const HomeScreen = () => {
     <View style={styles.container}>
       <LoggedInHeader />
       <ScrollableContainer>
-        <IdentityCards />
+        <WunderIdCard />
+        <CredentialCards />
       </ScrollableContainer>
       <FooterMenu />
     </View>

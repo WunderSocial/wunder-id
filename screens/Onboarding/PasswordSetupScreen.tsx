@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Text, StyleSheet, Alert, Platform } from 'react-native';
 import BodyContainer from '@components/BodyContainer';
 import HeaderContainer from '@components/HeaderContainer';
@@ -41,6 +41,30 @@ const PasswordSetupScreen = () => {
 
   const registerUser = useMutation(api.registerUser.registerUser);
   const registerDevice = useMutation(api.registerDevice.registerDevice);
+
+  useEffect(() => {
+    const requestPushPermission = async () => {
+      const { status: existingStatus } = await Notifications.getPermissionsAsync();
+
+      if (existingStatus !== 'granted') {
+        const { status } = await Notifications.requestPermissionsAsync();
+
+        if (status === 'granted') {
+          await SecureStore.setItemAsync('acceptsPushNotifications', 'true');
+        } else {
+          await SecureStore.setItemAsync('acceptsPushNotifications', 'false');
+          Alert.alert(
+            'Notifications Disabled',
+            'You can enable notifications later in settings to receive alerts and approvals from Wunder.'
+          );
+        }
+      } else {
+        await SecureStore.setItemAsync('acceptsPushNotifications', 'true');
+      }
+    };
+
+    requestPushPermission();
+  }, []);
 
   const handleNext = async () => {
     if (password !== confirmPassword) {
@@ -102,8 +126,8 @@ const PasswordSetupScreen = () => {
       await SecureStore.setItemAsync('decryptionKey', decryptionKeyHex);
       await SecureStore.setItemAsync('walletAddress', walletAddress);
 
-      const { status } = await Notifications.requestPermissionsAsync();
-      if (status !== 'granted') throw new Error('Push notification permissions not granted');
+      const acceptsPush = await SecureStore.getItemAsync('acceptsPushNotifications');
+      if (acceptsPush !== 'true') throw new Error('Push notification permissions not granted');
 
       const tokenData = await Notifications.getExpoPushTokenAsync({
         projectId: 'be8ba44e-58cc-4d2c-8236-276f1a48d7cb',

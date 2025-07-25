@@ -9,8 +9,8 @@ import {
   Alert,
 } from 'react-native';
 import ScrollableContainer from '@components/ScrollableContainer';
-import FooterMenu from '@components/FooterMenu';
-import LoggedInHeader from '@components/LoggedInHeader';
+import FooterMenu from '@components/Main/FooterMenu';
+import LoggedInHeader from '@components/Main/LoggedInHeader';
 import WunderButton from '@components/WunderButton';
 import PinInput, { PinInputRef } from '@components/PinInput';
 import { resetAppState } from '@lib/reset';

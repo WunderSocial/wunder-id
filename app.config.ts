@@ -5,6 +5,7 @@ export default {
     name: 'Wunder ID',
     slug: 'wunder-id',
     owner: 'kaynebrennanwunder',
+    icon: './assets/wunder-id-app-logo.png',
     extra: {
       convexUrl: process.env.EXPO_PUBLIC_CONVEX_URL,
       "eas": {

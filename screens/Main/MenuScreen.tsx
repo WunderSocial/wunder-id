@@ -39,7 +39,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: 'black',
-    paddingTop: 40,
+    paddingTop: 85,
     paddingHorizontal: 20,
   },
   headerRow: {

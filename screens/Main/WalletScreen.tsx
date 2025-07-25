@@ -1,8 +1,9 @@
 import React from 'react';
 import { StyleSheet, Text, View, Alert } from 'react-native';
 import ScrollableContainer from '@components/ScrollableContainer';
-import FooterMenu from '@components/FooterMenu';
-import LoggedInHeader from '@components/LoggedInHeader';
+import FooterMenu from '@components/Main/FooterMenu';
+import LoggedInHeader from '@components/Main/LoggedInHeader';
+import WunderWalletOverview from '@components/Main/wunderWallet';
 
 const WalletScreen = () => {
 
@@ -11,9 +12,7 @@ const WalletScreen = () => {
       <LoggedInHeader />
 
       <ScrollableContainer>
-        <Text style={styles.placeholderText}>🎉 Wallet Goes Here</Text>
-        <View>
-        </View>
+        <WunderWalletOverview />
       </ScrollableContainer>
       <FooterMenu />
     </View>
