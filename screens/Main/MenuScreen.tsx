@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { useNavigation, NavigationProp } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/Feather';
-import { RootStackParamList } from '@navigation/RootNavigator'; // Adjust if needed
+import { RootStackParamList } from '@navigation/types';
 
 const MenuScreen = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();

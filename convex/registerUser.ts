@@ -9,7 +9,6 @@ export const registerUser = mutation({
   handler: async (ctx, args) => {
     const now = BigInt(Date.now());
 
-    // Ensure uniqueness
     const existing = await ctx.db
       .query('users')
       .withIndex('by_username', q => q.eq('username', args.username))

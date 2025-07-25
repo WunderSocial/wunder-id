@@ -4,15 +4,12 @@ import {
   Text,
   StyleSheet,
   Alert,
-  Pressable,
 } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
 import * as LocalAuthentication from 'expo-local-authentication';
-import * as Clipboard from 'expo-clipboard';
 import { sha256 } from '@noble/hashes/sha256';
 import { bytesToHex } from '@noble/hashes/utils';
 import PinInput, { PinInputRef } from '@components/PinInput';
-import WunderInput from '@components/WunderInput';
 import WunderButton from '@components/WunderButton';
 import RevealWalletDetails from '@components/Main/RevealWalletDetails';
 import { decryptSeed } from '@lib/crypto';
@@ -175,7 +172,6 @@ const SecurityScreen = () => {
       setAttempts(0);
       setPasswordAttempts(0);
     } catch (err) {
-      console.error('Secret reveal error:', err);
       Alert.alert('Error', 'Failed to decrypt identity data.');
     } finally {
       setBiometricTried(false);

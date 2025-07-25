@@ -28,7 +28,6 @@ export default function LoginRequestModal() {
   const respondToRequest = useMutation(api.respondToRequest.respondToRequest);
 
   useEffect(() => {
-    // Show modal if a new pending request appears
     setVisible(!!pendingRequest);
   }, [pendingRequest]);
 

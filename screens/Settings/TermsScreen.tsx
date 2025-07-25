@@ -3,7 +3,6 @@ import { StyleSheet, Text, View, Alert } from 'react-native';
 import ScrollableContainer from '@components/ScrollableContainer';
 import FooterMenu from '@components/FooterMenu';
 import LoggedInHeader from '@components/LoggedInHeader';
-import IdentityCards from '@components/Main/IdentityCards'; 
 
 const TermsScreen = () => {
 

@@ -14,14 +14,12 @@ export const getPushToken = async (): Promise<string | null> => {
     }
 
     if (finalStatus !== 'granted') {
-      console.warn('Push notification permission not granted');
       return null;
     }
 
     const token = (await Notifications.getExpoPushTokenAsync()).data;
     return token;
   } catch (err) {
-    console.error('Error getting push token:', err);
     return null;
   }
 };

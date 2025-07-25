@@ -8,14 +8,17 @@ import PinInput, { PinInputRef } from '@components/PinInput';
 import WunderButton from '@components/WunderButton';
 import { sha256 } from '@noble/hashes/sha256';
 import { bytesToHex } from '@noble/hashes/utils';
+import { useNavigation } from '@react-navigation/native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { OnboardingStackParamList } from '@navigation/types';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { RootStackParamList, OnboardingStackParamList } from '@navigation/types';
 
 type Props = NativeStackScreenProps<OnboardingStackParamList, 'EnterPin'>;
 
 const MAX_ATTEMPTS = 3;
 
 const EnterPinScreen = ({ navigation }: Props) => {
+  const rootNavigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const [enteredPin, setEnteredPin] = useState('');
   const [attempts, setAttempts] = useState(0);
   const pinInputRef = useRef<PinInputRef>(null);
@@ -25,7 +28,7 @@ const EnterPinScreen = ({ navigation }: Props) => {
     const enteredPinHash = bytesToHex(sha256(enteredPin));
 
     if (enteredPinHash === storedPinHash) {
-      navigation.replace('Home');
+      rootNavigation.replace('Home');
     } else {
       const newAttempts = attempts + 1;
       setAttempts(newAttempts);
@@ -38,7 +41,6 @@ const EnterPinScreen = ({ navigation }: Props) => {
           'Too many attempts',
           'You’ve entered the wrong PIN too many times. Please use your password to reset your wallet.'
         );
-        // Future: Navigate to password reset
       } else {
         Alert.alert('Incorrect PIN', 'Please try again.');
       }

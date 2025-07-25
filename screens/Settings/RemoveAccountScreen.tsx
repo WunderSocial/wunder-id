@@ -7,7 +7,6 @@ import {
   ToastAndroid,
   Modal,
   Alert,
-  Platform,
 } from 'react-native';
 import ScrollableContainer from '@components/ScrollableContainer';
 import FooterMenu from '@components/FooterMenu';
@@ -22,10 +21,8 @@ import { useNavigation } from '@react-navigation/native';
 import { useMutation } from 'convex/react';
 import { api } from '../../convex/_generated/api';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import type { RootStackParamList } from '@navigation/RootNavigator';
+import type { RootStackParamList } from '@navigation/types';
 import type { Id } from 'convex/_generated/dataModel';
-
-
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'RemoveAccount'>;
 
@@ -42,54 +39,67 @@ const RemoveAccountScreen = () => {
   };
 
   const confirmReset = async (pin: string) => {
-    try {
-      const enteredPinHash = bytesToHex(sha256(pin));
-      const storedPinHash = await SecureStore.getItemAsync('userPinHash');
+  try {
+    const enteredPinHash = bytesToHex(sha256(pin));
+    const storedPinHash = await SecureStore.getItemAsync('userPinHash');
 
-      if (enteredPinHash !== storedPinHash) {
-        console.warn('PIN mismatch');
-        pinInputRef.current?.triggerShake();
-        setEnteredPin('');
-        pinInputRef.current?.focusFirst();
-        return;
-      }
-
-      setShowPinModal(false);
-      ToastAndroid.show('Removing your account...', ToastAndroid.LONG);
-
-      // 🔐 Load secure values
-      const hashedFingerprint = await SecureStore.getItemAsync('hashedDeviceFingerprint');
-      const convexUserId = await SecureStore.getItemAsync('convexUserId');
-
-      console.log('convexUserId:', convexUserId);
-      console.log('hashedFingerprint:', hashedFingerprint);
-
-      if (!hashedFingerprint || !convexUserId) {
-        throw new Error('Missing required secure values');
-      }
-
-      // 🧠 Deregister this device
-      await deregisterDevice({
-        userId: convexUserId as Id<'users'>,
-        hashedFingerprint,
-      });
-      
-
-
-      console.log('✅ Device deregistered on Convex');
-
-      setTimeout(() => {
-        resetAppState();
-        navigation.reset({
-          index: 0,
-          routes: [{ name: 'Splash' }],
-        });
-      }, 3000);
-    } catch (err) {
-      console.error('Reset error:', err);
-      Alert.alert('Error', String(err));
+    if (enteredPinHash !== storedPinHash) {
+      pinInputRef.current?.triggerShake();
+      setEnteredPin('');
+      pinInputRef.current?.focusFirst();
+      return;
     }
-  };
+
+    setShowPinModal(false);
+    ToastAndroid.show('Removing your account...', ToastAndroid.LONG);
+
+    const hashedFingerprint = await SecureStore.getItemAsync('hashedDeviceFingerprint');
+    const convexUserId = await SecureStore.getItemAsync('convexUserId');
+
+    if (!hashedFingerprint || !convexUserId) {
+      throw new Error('Missing required secure values');
+    }
+
+    await deregisterDevice({
+      userId: convexUserId as Id<'users'>,
+      hashedFingerprint,
+    });
+
+    const keysToDelete = [
+      'walletAddress',
+      'encryptedSeed',
+      'encryptedPrivateKey',
+      'passwordHash',
+      'convexUserId',
+      'userId',
+      'decryptionKey',
+      'wunderId',
+      'hashedDeviceFingerprint',
+      'restoredSeedPhrase',
+      'isRestoring',
+      'pushToken',
+      'userPinHash',
+      'biometricsEnabled',
+      'biometricEncryptionKey',
+    ];
+
+    await Promise.all(
+      keysToDelete.map(async (key) => {
+        await SecureStore.deleteItemAsync(key);
+      })
+    );
+
+    setTimeout(() => {
+      resetAppState();
+      navigation.reset({
+        index: 0,
+        routes: [{ name: 'Splash' }],
+      });
+    }, 3000);
+  } catch (err) {
+    Alert.alert('Error', String(err));
+  }
+};
 
   return (
     <View style={styles.container}>

@@ -1,5 +1,5 @@
-import React, { useRef, useEffect, forwardRef, useImperativeHandle, useState } from 'react';
-import { View, TextInput, StyleSheet, Animated } from 'react-native';
+import React, { useRef, useEffect, forwardRef, useImperativeHandle } from 'react';
+import { TextInput, StyleSheet, Animated } from 'react-native';
 
 interface Props {
   value: string;
@@ -107,3 +107,4 @@ const styles = StyleSheet.create({
 });
 
 export default PinInput;
+ 

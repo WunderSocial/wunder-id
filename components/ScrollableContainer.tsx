@@ -1,12 +1,9 @@
-// components/ScrollableContainer.tsx
-
 import React from 'react';
 import {
   ScrollView,
   KeyboardAvoidingView,
   Platform,
   StyleSheet,
-  View,
 } from 'react-native';
 
 interface Props {

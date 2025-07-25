@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, Button, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, ActivityIndicator } from 'react-native';
 import WunderButton from './WunderButton';
 
 interface Props {
@@ -26,8 +26,8 @@ const CheckAvailability = ({
         loading={isLoading}
       />
       {isLoading && <ActivityIndicator style={{ marginTop: 12 }} />}
-      {isAvailable === true && <Text style={styles.available}>✅ Available, Claim now!</Text>}
-      {isAvailable === false && <Text style={styles.taken}>❌ Not available, try again</Text>}
+      {isAvailable === true && <Text style={styles.available}>Wunder ID Available, Claim now!</Text>}
+      {isAvailable === false && <Text style={styles.taken}>Wunder ID Not available, try again</Text>}
     </View>
   );
 };

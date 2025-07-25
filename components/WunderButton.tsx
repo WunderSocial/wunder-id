@@ -36,7 +36,7 @@ const WunderButton = ({ title, onPress, disabled, loading, variant = 'primary', 
 const styles = StyleSheet.create({
   button: {
   paddingVertical: 14,
-  paddingHorizontal: 24, // 👈 add this
+  paddingHorizontal: 24,
   borderRadius: 12,
   alignItems: 'center',
   justifyContent: 'center',

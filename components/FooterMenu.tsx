@@ -3,8 +3,6 @@ import {
   View,
   StyleSheet,
   Pressable,
-  Platform,
-  Animated,
 } from 'react-native';
 import { useNavigation, NavigationProp, useRoute } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/Feather';
@@ -12,7 +10,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 const menuItems = [
   { name: 'Home', icon: 'home' },
-  { name: 'Wallet', icon: 'credit-card' }, // or use 'briefcase'
+  { name: 'Wallet', icon: 'credit-card' },
   { name: 'Profile', icon: 'user' },
 ];
 
@@ -62,7 +60,7 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: -3 },
     shadowOpacity: 0.2,
     shadowRadius: 4,
-    elevation: 10, // Android elevation
+    elevation: 10,
     position: 'relative',
     zIndex: 10,
   },

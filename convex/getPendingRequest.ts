@@ -1,11 +1,10 @@
-// convex/loginRequests/getPendingRequest.ts
 import { query } from './_generated/server';
 import { v } from 'convex/values';
 
 export const getPendingRequest = query({
   args: {
     wunderId: v.string(),
-    refreshToken: v.optional(v.number()), // add this line
+    refreshToken: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
     const request = await ctx.db

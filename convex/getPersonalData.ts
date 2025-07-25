@@ -12,3 +12,4 @@ export const getPersonalData = query({
       .first();
   },
 });
+ 

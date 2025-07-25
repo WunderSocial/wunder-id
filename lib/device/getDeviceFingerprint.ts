@@ -8,10 +8,10 @@ export const getDeviceFingerprint = async (): Promise<string> => {
   let deviceId = '';
 
   if (Platform.OS === 'android') {
-    const androidId = Application.getAndroidId(); // ✅ Correct method
+    const androidId = Application.getAndroidId();
     deviceId = androidId ?? 'unknown';
   } else if (Platform.OS === 'ios') {
-    const iosId = await Application.getIosIdForVendorAsync(); // ✅ Still async
+    const iosId = await Application.getIosIdForVendorAsync();
     deviceId = iosId ?? 'unknown';
   }
 

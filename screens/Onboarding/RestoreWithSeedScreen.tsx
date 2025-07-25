@@ -1,6 +1,5 @@
-// RestoreWithSeedScreen.tsx
 import React, { useState } from 'react';
-import { Text, StyleSheet, View, TextInput, Alert, Platform } from 'react-native';
+import { Text, StyleSheet, TextInput, Alert, Platform } from 'react-native';
 import BodyContainer from '@components/BodyContainer';
 import HeaderContainer from '@components/HeaderContainer';
 import Logo from '@components/WunderLogo';
@@ -16,7 +15,6 @@ import { getDeviceFingerprint } from '@lib/device/getDeviceFingerprint';
 import * as Notifications from 'expo-notifications';
 import { sha256 } from '@noble/hashes/sha256';
 import { bytesToHex } from '@noble/hashes/utils';
-
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { OnboardingStackParamList } from '@navigation/types';
 
@@ -51,15 +49,14 @@ const RestoreWithSeedScreen = () => {
 
       const hdNode = ethers.Wallet.fromPhrase(cleaned);
       const walletAddress = hdNode.address.toLowerCase();
-      console.log('🧠 Wallet address from seed:', walletAddress);
 
       const user = await convex.query(api.getUserByWallet.getUserByWallet, { walletAddress });
-      console.log('👤 Retrieved user:', user);
       if (!user) {
         Alert.alert('No Account Found', 'We couldn’t find an account with that seed phrase.');
         return;
       }
       await SecureStore.setItemAsync('convexUserId', user._id);
+      await SecureStore.setItemAsync('wunderId', `${user.username}.wunder.id`);
 
       const { status } = await Notifications.requestPermissionsAsync();
       if (status !== 'granted') throw new Error('Push notification permissions not granted');
@@ -86,10 +83,8 @@ const RestoreWithSeedScreen = () => {
       await SecureStore.setItemAsync('restoredSeedPhrase', cleaned);
       await SecureStore.setItemAsync('isRestoring', 'true');
 
-      console.log('✅ Device registered, navigating to PasswordSetup');
       navigation.replace('PasswordSetup');
     } catch (err) {
-      console.error('❌ Restore error:', err);
       Alert.alert('Something went wrong', 'Please try again.');
     } finally {
       setIsLoading(false);

@@ -8,9 +8,7 @@ import {
   Platform,
   View,
 } from 'react-native';
-import { Dimensions } from 'react-native';
 
-const SCREEN_HEIGHT = Dimensions.get('window').height;
 const HEADER_HEIGHT = 14;
 
 interface Props {

@@ -12,3 +12,4 @@ export const getUserByWallet = query({
       .first();
   },
 });
+ 

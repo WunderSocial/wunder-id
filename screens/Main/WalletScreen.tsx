@@ -3,7 +3,6 @@ import { StyleSheet, Text, View, Alert } from 'react-native';
 import ScrollableContainer from '@components/ScrollableContainer';
 import FooterMenu from '@components/FooterMenu';
 import LoggedInHeader from '@components/LoggedInHeader';
-import { resetAppState } from '@lib/reset';
 
 const WalletScreen = () => {
 
@@ -13,12 +12,9 @@ const WalletScreen = () => {
 
       <ScrollableContainer>
         <Text style={styles.placeholderText}>🎉 Wallet Goes Here</Text>
-
         <View>
-          
         </View>
       </ScrollableContainer>
-
       <FooterMenu />
     </View>
   );

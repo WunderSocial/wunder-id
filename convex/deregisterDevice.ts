@@ -17,4 +17,4 @@ export const deregisterDevice = mutation({
 
     await ctx.db.delete(match._id);
   },
-});
+}); 

@@ -11,7 +11,6 @@ import * as SecureStore from 'expo-secure-store';
 import CheckAvailability from '@components/CheckAvailability';
 import { useConvex } from 'convex/react';
 import { api } from '../../convex/_generated/api';
-
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { OnboardingStackParamList } from '@navigation/types';
 
@@ -34,7 +33,6 @@ const UsernameScreen = () => {
       });
       setIsAvailable(available);
     } catch (err) {
-      console.error('Error checking username availability:', err);
       setIsAvailable(false);
     } finally {
       setIsChecking(false);
@@ -45,7 +43,6 @@ const UsernameScreen = () => {
     await AsyncStorage.setItem('username', username);
     const fullWunderId = `${username}.wunderid.eth`;
     await SecureStore.setItemAsync('wunderId', fullWunderId);
-    console.log('🔐 Stored Wunder ID:', fullWunderId);
     navigation.navigate('PasswordSetup');
   };
 
@@ -72,7 +69,8 @@ const UsernameScreen = () => {
         keyboardType="default"
         value={username}
         onChangeText={(text) => {
-          setUsername(text);
+          const filteredText = text.replace(/[^a-z0-9-_]/g, '');
+          setUsername(filteredText);
           setIsAvailable(null);
         }}
       />

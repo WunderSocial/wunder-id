@@ -14,3 +14,4 @@ export const checkUsernameAvailable = query({
     return existing === null;
   },
 });
+ 

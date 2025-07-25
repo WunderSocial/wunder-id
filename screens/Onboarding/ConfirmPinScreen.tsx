@@ -10,11 +10,18 @@ import * as LocalAuthentication from 'expo-local-authentication';
 import { sha256 } from '@noble/hashes/sha256';
 import { bytesToHex } from '@noble/hashes/utils';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { OnboardingStackParamList } from '@navigation/types';
+import { useNavigation } from '@react-navigation/native';
+import {
+  OnboardingStackParamList,
+  RootStackParamList,
+} from '@navigation/types';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 type Props = NativeStackScreenProps<OnboardingStackParamList, 'ConfirmPin'>;
+type RootNav = NativeStackNavigationProp<RootStackParamList>;
 
-const ConfirmPinScreen = ({ navigation, route }: Props) => {
+const ConfirmPinScreen = ({ route, navigation }: Props) => {
+  const rootNavigation = useNavigation<RootNav>();
   const pinInputRef = useRef<PinInputRef>(null);
   const [confirmPin, setConfirmPin] = useState('');
   const [attemptCount, setAttemptCount] = useState(0);
@@ -30,7 +37,7 @@ const ConfirmPinScreen = ({ navigation, route }: Props) => {
 
       if (newAttemptCount >= 3) {
         Alert.alert('Too many attempts', 'Let’s try again from the beginning.');
-        navigation.replace('SetPin');
+        navigation.replace('SetPin'); // use onboarding stack navigation
         return;
       }
 
@@ -52,7 +59,7 @@ const ConfirmPinScreen = ({ navigation, route }: Props) => {
           [
             {
               text: 'No',
-              onPress: () => navigation.replace('Home'),
+              onPress: () => rootNavigation.replace('Home'),
               style: 'cancel',
             },
             {
@@ -73,16 +80,15 @@ const ConfirmPinScreen = ({ navigation, route }: Props) => {
                   await SecureStore.deleteItemAsync('biometricEncryptionKey');
                 }
 
-                navigation.replace('Home');
+                rootNavigation.replace('Home');
               },
             },
           ]
         );
       } else {
-        navigation.replace('Home');
+        rootNavigation.replace('Home');
       }
     } catch (err) {
-      console.error('PIN save error:', err);
       Alert.alert('Error', 'Failed to save PIN securely');
     }
   };

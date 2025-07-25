@@ -3,7 +3,6 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import type { RootStackParamList } from './types';
 import OnboardingStack from './OnboardingStack';
-
 import SplashScreen from '@screens/SplashScreen';
 import HomeScreen from '@screens/Main/HomeScreen';
 import EnterPinScreen from '@screens/Onboarding/EnterPinScreen';

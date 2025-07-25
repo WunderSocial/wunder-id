@@ -10,9 +10,9 @@ import RootNavigator from './navigation/RootNavigator';
 export default function App() {
   return (
     <ConvexProvider client={convexClient}>
-    <SafeAreaProvider>
-      <RootNavigator />
-    </SafeAreaProvider>
+      <SafeAreaProvider>
+        <RootNavigator />
+      </SafeAreaProvider>
     </ConvexProvider>
   );
 }

@@ -25,3 +25,4 @@ export type RootStackParamList = {
   Security: undefined;
   RemoveAccount: undefined;
 };
+ 

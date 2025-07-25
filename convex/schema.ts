@@ -25,7 +25,7 @@ export default defineSchema({
     email: v.string(),
     telephone: v.string(),
     profilePhoto: v.string(),
-    dateOfBirth: v.string(), // or v.int64() if you prefer epoch format
+    dateOfBirth: v.string(),
     country: v.string(),
     city: v.string(),
   })
@@ -35,7 +35,7 @@ export default defineSchema({
 
   credentials: defineTable({
     userId: v.id('users'),
-    type: v.string(), // e.g., 'profile_complete', 'email_verified', 'liveness_check', etc.
+    type: v.string(),
     lastUpdated: v.int64(), 
   })
   .index('by_user_and_type', ['userId', 'type'])

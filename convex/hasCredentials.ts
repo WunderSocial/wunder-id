@@ -15,3 +15,4 @@ export const hasCredential = query({
     return !!existing;
   },
 });
+ 

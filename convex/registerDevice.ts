@@ -10,9 +10,6 @@ export const registerDevice = mutation({
   },
   handler: async (ctx, args) => {
     const now = BigInt(Date.now());
-
-    // (Optional) Upsert behaviour: if this deviceId is already registered for this user,
-    // update its pushToken + lastUpdated instead of inserting a duplicate.
     const existing = await ctx.db
       .query('devices')
       .withIndex('by_user', q => q.eq('userId', args.userId))
@@ -28,7 +25,6 @@ export const registerDevice = mutation({
       return match._id;
     }
 
-    // Insert new device
     const deviceId = await ctx.db.insert('devices', {
       userId: args.userId,
       deviceId: args.deviceId,
