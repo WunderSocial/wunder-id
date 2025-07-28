@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { Text, StyleSheet, Alert } from 'react-native';
 import BodyContainer from '@components/BodyContainer';
 import HeaderContainer from '@components/HeaderContainer';
@@ -7,12 +7,21 @@ import PinInput, { PinInputRef } from '@components/PinInput';
 import WunderButton from '@components/WunderButton';
 import { OnboardingStackParamList } from '@navigation/types';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { useIsFocused } from '@react-navigation/native';
 
 type Props = NativeStackScreenProps<OnboardingStackParamList, 'SetPin'>;
 
 const SetPinScreen = ({ navigation }: Props) => {
   const [pin, setPin] = useState('');
   const pinInputRef = useRef<PinInputRef>(null);
+  const isFocused = useIsFocused();
+
+  useEffect(() => {
+    if (isFocused) {
+      setPin('');
+      pinInputRef.current?.focusFirst();
+    }
+  }, [isFocused]);
 
   const handleNext = () => {
     if (pin.length < 6) {
@@ -52,4 +61,3 @@ const styles = StyleSheet.create({
 });
 
 export default SetPinScreen;
- 

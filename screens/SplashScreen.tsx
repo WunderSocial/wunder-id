@@ -10,9 +10,37 @@ type Props = NativeStackScreenProps<RootStackParamList, 'Splash'>;
 const SplashScreen = ({ navigation }: Props) => {
   useEffect(() => {
     const checkAuth = async () => {
+      const accountComplete = await SecureStore.getItemAsync('accountComplete');
+
+      if (!accountComplete) {
+        // Account not completed – wipe all known secure items
+        const keysToPurge = [
+          'walletAddress',
+          'encryptedSeed',
+          'encryptedPrivateKey',
+          'passwordHash',
+          'convexUserId',
+          'userId',
+          'decryptionKey',
+          'wunderId',
+          'hashedDeviceFingerprint',
+          'restoredSeedPhrase',
+          'isRestoring',
+          'pushToken',
+          'userPinHash',
+          'biometricsEnabled',
+          'biometricEncryptionKey',
+          'accountComplete', // clean this too just in case
+        ];
+
+        await Promise.all(keysToPurge.map((key) => SecureStore.deleteItemAsync(key)));
+
+        navigation.replace('Onboarding', { screen: 'AccountChoice' });
+        return;
+      }
+
       const encryptedSeed = await SecureStore.getItemAsync('encryptedSeed');
       const biometricsEnabled = await SecureStore.getItemAsync('biometricsEnabled');
-      const storedPin = await SecureStore.getItemAsync('userPin');
 
       if (!encryptedSeed) {
         navigation.replace('Onboarding', { screen: 'AccountChoice' });
@@ -29,9 +57,10 @@ const SplashScreen = ({ navigation }: Props) => {
           return;
         }
       }
+
       navigation.replace('EnterPin');
     };
-    
+
     checkAuth();
   }, []);
 

@@ -37,7 +37,7 @@ const ConfirmPinScreen = ({ route, navigation }: Props) => {
 
       if (newAttemptCount >= 3) {
         Alert.alert('Too many attempts', 'Let’s try again from the beginning.');
-        navigation.replace('SetPin'); // use onboarding stack navigation
+        navigation.replace('SetPin');
         return;
       }
 
@@ -59,7 +59,10 @@ const ConfirmPinScreen = ({ route, navigation }: Props) => {
           [
             {
               text: 'No',
-              onPress: () => rootNavigation.replace('Home'),
+              onPress: async () => {
+                await SecureStore.setItemAsync('onboardingComplete', 'true');
+                rootNavigation.replace('Home');
+              },
               style: 'cancel',
             },
             {
@@ -80,12 +83,14 @@ const ConfirmPinScreen = ({ route, navigation }: Props) => {
                   await SecureStore.deleteItemAsync('biometricEncryptionKey');
                 }
 
+                await SecureStore.setItemAsync('onboardingComplete', 'true');
                 rootNavigation.replace('Home');
               },
             },
           ]
         );
       } else {
+        await SecureStore.setItemAsync('onboardingComplete', 'true');
         rootNavigation.replace('Home');
       }
     } catch (err) {
