@@ -62,6 +62,25 @@ const CreateProofOfAgeCredential = () => {
     loadDobFromProfile();
   }, [profileCredential]);
 
+  // Helper to check if over 18 based on dob string (expected "YYYY-MM-DD" or "DD-MM-YYYY")
+  // Assuming dob is in "DD-MM-YYYY" format from DateOfBirthPicker, so we parse accordingly:
+  const isOver18 = (dobStr: string) => {
+    // Convert "DD-MM-YYYY" to a Date object
+    const parts = dobStr.split('-');
+    if (parts.length !== 3) return false;
+    const day = parseInt(parts[0], 10);
+    const month = parseInt(parts[1], 10) - 1; // JS months 0-indexed
+    const year = parseInt(parts[2], 10);
+
+    const birthDate = new Date(year, month, day);
+    if (isNaN(birthDate.getTime())) return false;
+
+    const now = new Date();
+    const eighteenYearsAgo = new Date(now.getFullYear() - 18, now.getMonth(), now.getDate());
+
+    return birthDate <= eighteenYearsAgo;
+  };
+
   const handleConfirm = async () => {
     if (!dob) {
       Alert.alert('Missing Date of Birth', 'Please select your date of birth.');
@@ -83,9 +102,14 @@ const CreateProofOfAgeCredential = () => {
       expiryDate.setFullYear(expiryDate.getFullYear() + 1);
       const expiryISO = expiryDate.toISOString().split('T')[0]; // YYYY-MM-DD format
 
+      // Determine if user is over 18
+      const over18 = isOver18(dob);
+
+      // Add the over18 flag into the content
       const proofOfAgeData = {
         dob,
         expiry: expiryISO,
+        over18,          // <-- NEW flag added here
       };
 
       const jsonContent = JSON.stringify(proofOfAgeData);
