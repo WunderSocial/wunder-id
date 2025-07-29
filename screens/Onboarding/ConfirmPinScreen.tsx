@@ -16,6 +16,11 @@ import {
   RootStackParamList,
 } from '@navigation/types';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { useMutation } from 'convex/react';
+import { api } from '../../convex/_generated/api';
+import { encryptSeed } from '@lib/crypto';
+import { CREDENTIAL_TYPES } from 'constants/credentials';
+import type { Id } from '../../convex/_generated/dataModel';
 
 type Props = NativeStackScreenProps<OnboardingStackParamList, 'ConfirmPin'>;
 type RootNav = NativeStackNavigationProp<RootStackParamList>;
@@ -25,7 +30,52 @@ const ConfirmPinScreen = ({ route, navigation }: Props) => {
   const pinInputRef = useRef<PinInputRef>(null);
   const [confirmPin, setConfirmPin] = useState('');
   const [attemptCount, setAttemptCount] = useState(0);
+
   const { pin: originalPin } = route.params;
+  const issueCredential = useMutation(api.credentials.issueCredential);
+
+  const handleCreateWunderIdAndWalletCreds = async (
+    userId: Id<'users'>,
+    decryptionKey: string
+  ) => {
+    try {
+      const wunderIdRaw = await SecureStore.getItemAsync('wunderId');
+      const walletAddress = await SecureStore.getItemAsync('walletAddress');
+
+      if (!wunderIdRaw || !walletAddress) {
+        throw new Error('Missing wunderId or walletAddress in storage');
+      }
+
+      const username = wunderIdRaw.includes('@')
+        ? wunderIdRaw.split('@')[0]
+        : wunderIdRaw;
+
+      const wunderIdContent = JSON.stringify({
+        wunderId: `${username}@wunder`,
+      });
+
+      const encryptedWunderId = await encryptSeed(wunderIdContent, decryptionKey);
+
+      const walletContent = JSON.stringify({ walletAddress });
+      const encryptedWalletAddress = await encryptSeed(walletContent, decryptionKey);
+
+      await issueCredential({
+        userId,
+        type: CREDENTIAL_TYPES.WUNDER_ID,
+        content: encryptedWunderId,
+      });
+
+      await issueCredential({
+        userId,
+        type: CREDENTIAL_TYPES.WALLET_ADDRESS,
+        content: encryptedWalletAddress,
+      });
+    } catch (error) {
+      console.error('Failed to create WunderID and Wallet Address credentials:', error);
+      Alert.alert('Error', 'Failed to create WunderID and Wallet Address credentials.');
+      throw error;
+    }
+  };
 
   const handleConfirm = async () => {
     if (confirmPin !== originalPin) {
@@ -52,6 +102,17 @@ const ConfirmPinScreen = ({ route, navigation }: Props) => {
       const hasHardware = await LocalAuthentication.hasHardwareAsync();
       const isEnrolled = await LocalAuthentication.isEnrolledAsync();
 
+      // Get userId and decryptionKey and cast userId correctly
+      const userIdStr = await SecureStore.getItemAsync('convexUserId');
+      const decryptionKey = await SecureStore.getItemAsync('decryptionKey');
+
+      if (!userIdStr || !decryptionKey) throw new Error('Missing userId or decryptionKey');
+
+      const userId = userIdStr as unknown as Id<'users'>;
+
+      // Create WunderID and Wallet Address credentials
+      await handleCreateWunderIdAndWalletCreds(userId, decryptionKey);
+
       if (hasHardware && isEnrolled) {
         Alert.alert(
           'Enable Face ID / Touch ID?',
@@ -60,7 +121,7 @@ const ConfirmPinScreen = ({ route, navigation }: Props) => {
             {
               text: 'No',
               onPress: async () => {
-                await SecureStore.setItemAsync('onboardingComplete', 'true');
+                await SecureStore.setItemAsync('accountComplete', 'true');
                 rootNavigation.replace('Home');
               },
               style: 'cancel',
@@ -73,9 +134,6 @@ const ConfirmPinScreen = ({ route, navigation }: Props) => {
                 });
 
                 if (result.success) {
-                  const decryptionKey = await SecureStore.getItemAsync('decryptionKey');
-                  if (!decryptionKey) throw new Error('Missing decryption key');
-
                   await SecureStore.setItemAsync('biometricsEnabled', 'true');
                   await SecureStore.setItemAsync('biometricEncryptionKey', decryptionKey);
                 } else {
@@ -83,18 +141,19 @@ const ConfirmPinScreen = ({ route, navigation }: Props) => {
                   await SecureStore.deleteItemAsync('biometricEncryptionKey');
                 }
 
-                await SecureStore.setItemAsync('onboardingComplete', 'true');
+                await SecureStore.setItemAsync('accountComplete', 'true');
                 rootNavigation.replace('Home');
               },
             },
           ]
         );
       } else {
-        await SecureStore.setItemAsync('onboardingComplete', 'true');
+        await SecureStore.setItemAsync('accountComplete', 'true');
         rootNavigation.replace('Home');
       }
     } catch (err) {
-      Alert.alert('Error', 'Failed to save PIN securely');
+      Alert.alert('Error', 'Failed to save PIN securely or create credentials');
+      console.error(err);
     }
   };
 

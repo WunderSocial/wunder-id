@@ -13,6 +13,7 @@ import SettingsScreen from '@screens/Settings/SettingsScreen';
 import SecurityScreen from '@screens/Settings/SecurityScreen';
 import RemoveAccountScreen from '@screens/Settings/RemoveAccountScreen';
 import MenuScreen from '@screens/Main/MenuScreen';
+import CredentialEditorScreen from '@screens/Main/CredentialEditorScreen';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -31,6 +32,7 @@ const RootNavigator = () => {
         <Stack.Screen name="Settings" component={SettingsScreen} />
         <Stack.Screen name="Security" component={SecurityScreen} />
         <Stack.Screen name="RemoveAccount" component={RemoveAccountScreen} />
+        <Stack.Screen name="CredentialEditor" component={CredentialEditorScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );

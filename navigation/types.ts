@@ -24,5 +24,6 @@ export type RootStackParamList = {
   Settings: undefined;
   Security: undefined;
   RemoveAccount: undefined;
+  CredentialEditor: { credentialType: string };
 };
  

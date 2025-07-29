@@ -36,6 +36,7 @@ export default defineSchema({
   credentials: defineTable({
     userId: v.id('users'),
     type: v.string(),
+    content: v.string(),
     lastUpdated: v.int64(), 
   })
   .index('by_user_and_type', ['userId', 'type'])

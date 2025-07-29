@@ -81,6 +81,7 @@ const RemoveAccountScreen = () => {
       'userPinHash',
       'biometricsEnabled',
       'biometricEncryptionKey',
+      'accountComplete',
     ];
 
     await Promise.all(

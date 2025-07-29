@@ -21,7 +21,6 @@ const styles = StyleSheet.create({
     width: '100%',
     backgroundColor: 'black',
     paddingTop: 32,
-    paddingBottom: 36,
     zIndex: 10,
   },
   row: {

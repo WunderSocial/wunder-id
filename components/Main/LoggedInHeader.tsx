@@ -18,9 +18,7 @@ const LoggedInHeader = () => {
         }}
       >
         <Logo />
-        {/* Cog icon removed */}
       </View>
-      <View style={{ marginTop: 12, width: '100%', paddingHorizontal: 20 }} />
     </HeaderContainer>
   );
 };
