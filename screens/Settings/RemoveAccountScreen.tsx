@@ -9,7 +9,6 @@ import {
   Alert,
 } from 'react-native';
 import ScrollableContainer from '@components/ScrollableContainer';
-import FooterMenu from '@components/Main/FooterMenu';
 import LoggedInHeader from '@components/Main/LoggedInHeader';
 import WunderButton from '@components/WunderButton';
 import PinInput, { PinInputRef } from '@components/PinInput';
@@ -20,11 +19,22 @@ import * as SecureStore from 'expo-secure-store';
 import { useNavigation } from '@react-navigation/native';
 import { useMutation } from 'convex/react';
 import { api } from '../../convex/_generated/api';
-import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import type { RootStackParamList } from '@navigation/types';
+import type { DrawerNavigationProp } from '@react-navigation/drawer';
 import type { Id } from 'convex/_generated/dataModel';
 
-type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'RemoveAccount'>;
+// Define drawer param list matching your Drawer screens
+type DrawerParamList = {
+  Home: undefined;
+  Profile: undefined;
+  Wallet: undefined;
+  Terms: undefined;
+  Settings: undefined;
+  Security: undefined;
+  RemoveAccount: undefined;
+  CredentialEditor: undefined;
+};
+
+type NavigationProp = DrawerNavigationProp<DrawerParamList, 'RemoveAccount'>;
 
 const RemoveAccountScreen = () => {
   const navigation = useNavigation<NavigationProp>();
@@ -39,68 +49,69 @@ const RemoveAccountScreen = () => {
   };
 
   const confirmReset = async (pin: string) => {
-  try {
-    const enteredPinHash = bytesToHex(sha256(pin));
-    const storedPinHash = await SecureStore.getItemAsync('userPinHash');
+    try {
+      const enteredPinHash = bytesToHex(sha256(pin));
+      const storedPinHash = await SecureStore.getItemAsync('userPinHash');
 
-    if (enteredPinHash !== storedPinHash) {
-      pinInputRef.current?.triggerShake();
-      setEnteredPin('');
-      pinInputRef.current?.focusFirst();
-      return;
-    }
+      if (enteredPinHash !== storedPinHash) {
+        pinInputRef.current?.triggerShake();
+        setEnteredPin('');
+        pinInputRef.current?.focusFirst();
+        return;
+      }
 
-    setShowPinModal(false);
-    ToastAndroid.show('Removing your account...', ToastAndroid.LONG);
+      setShowPinModal(false);
+      ToastAndroid.show('Removing your account...', ToastAndroid.LONG);
 
-    const hashedFingerprint = await SecureStore.getItemAsync('hashedDeviceFingerprint');
-    const convexUserId = await SecureStore.getItemAsync('convexUserId');
+      const hashedFingerprint = await SecureStore.getItemAsync('hashedDeviceFingerprint');
+      const convexUserId = await SecureStore.getItemAsync('convexUserId');
 
-    if (!hashedFingerprint || !convexUserId) {
-      throw new Error('Missing required secure values');
-    }
+      if (!hashedFingerprint || !convexUserId) {
+        throw new Error('Missing required secure values');
+      }
 
-    await deregisterDevice({
-      userId: convexUserId as Id<'users'>,
-      hashedFingerprint,
-    });
-
-    const keysToDelete = [
-      'walletAddress',
-      'encryptedSeed',
-      'encryptedPrivateKey',
-      'passwordHash',
-      'convexUserId',
-      'userId',
-      'decryptionKey',
-      'wunderId',
-      'hashedDeviceFingerprint',
-      'restoredSeedPhrase',
-      'isRestoring',
-      'pushToken',
-      'userPinHash',
-      'biometricsEnabled',
-      'biometricEncryptionKey',
-      'accountComplete',
-    ];
-
-    await Promise.all(
-      keysToDelete.map(async (key) => {
-        await SecureStore.deleteItemAsync(key);
-      })
-    );
-
-    setTimeout(() => {
-      resetAppState();
-      navigation.reset({
-        index: 0,
-        routes: [{ name: 'Splash' }],
+      await deregisterDevice({
+        userId: convexUserId as Id<'users'>,
+        hashedFingerprint,
       });
-    }, 3000);
-  } catch (err) {
-    Alert.alert('Error', String(err));
-  }
-};
+
+      const keysToDelete = [
+        'walletAddress',
+        'encryptedSeed',
+        'encryptedPrivateKey',
+        'passwordHash',
+        'convexUserId',
+        'userId',
+        'decryptionKey',
+        'wunderId',
+        'hashedDeviceFingerprint',
+        'restoredSeedPhrase',
+        'isRestoring',
+        'pushToken',
+        'userPinHash',
+        'biometricsEnabled',
+        'biometricEncryptionKey',
+        'accountComplete',
+      ];
+
+      await Promise.all(
+        keysToDelete.map(async (key) => {
+          await SecureStore.deleteItemAsync(key);
+        })
+      );
+
+      setTimeout(() => {
+        resetAppState();
+        // Reset to Splash (which is in Root stack)
+        navigation.reset({
+          index: 0,
+          routes: [{ name: 'Splash' as never }], // TypeScript fix
+        });
+      }, 500);
+    } catch (err) {
+      Alert.alert('Error', String(err));
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -124,7 +135,6 @@ const RemoveAccountScreen = () => {
           </View>
         </View>
       </ScrollableContainer>
-      {/* <FooterMenu /> */}
 
       <Modal
         visible={showPinModal}

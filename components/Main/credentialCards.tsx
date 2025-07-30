@@ -12,12 +12,12 @@ import {
 } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
 import { format } from 'date-fns';
-import { useQuery, useMutation } from 'convex/react'; // <-- added useMutation
+import { useQuery, useMutation } from 'convex/react';
 import { api } from '../../convex/_generated/api';
 import { decryptSeed } from '@lib/crypto';
 import type { Id } from '../../convex/_generated/dataModel';
-import { useNavigation, NavigationProp } from '@react-navigation/native';
-import type { RootStackParamList } from '@navigation/types';
+import { useNavigation } from '@react-navigation/native';
+import type { DrawerNavigationProp } from '@react-navigation/drawer';
 
 import { CREDENTIAL_TYPES } from 'constants/credentials';
 
@@ -32,6 +32,18 @@ type Credential = {
   expires?: string | null;
 };
 
+// Match your drawer navigator params here (add all your drawer screens)
+type DrawerParamList = {
+  Home: undefined;
+  Profile: undefined;
+  Wallet: undefined;
+  Terms: undefined;
+  Settings: undefined;
+  Security: undefined;
+  RemoveAccount: undefined;
+  CredentialEditor: { credentialType: string };
+};
+
 const ADDABLE_CREDENTIALS: { type: string; title: string }[] = [
   { type: CREDENTIAL_TYPES.BASIC_PROFILE, title: 'Basic Profile' },
   { type: CREDENTIAL_TYPES.WALLET_ADDRESS || 'wallet_address', title: 'Wallet Address' },
@@ -41,7 +53,7 @@ const ADDABLE_CREDENTIALS: { type: string; title: string }[] = [
 ];
 
 const CredentialCards = () => {
-  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+  const navigation = useNavigation<DrawerNavigationProp<DrawerParamList>>();
 
   const [userId, setUserId] = useState<Id<'users'> | null>(null);
   const [decryptionKey, setDecryptionKey] = useState<string | null>(null);
@@ -51,7 +63,6 @@ const CredentialCards = () => {
   const [selectedContent, setSelectedContent] = useState<Record<string, any> | null>(null);
   const [addModalVisible, setAddModalVisible] = useState(false);
 
-  // *** ADDED: mutation hook for delete ***
   const deleteCredential = useMutation(api.credentials.deleteCredentialByType);
 
   useEffect(() => {
@@ -65,7 +76,6 @@ const CredentialCards = () => {
     loadUser();
   }, []);
 
-  // Query by credential types using constants
   const wunderIdCred = useQuery(
     api.credentials.hasCredential,
     userId ? { userId, type: CREDENTIAL_TYPES.WUNDER_ID || 'wunder_id' } : 'skip'
@@ -176,12 +186,10 @@ const CredentialCards = () => {
     }, 100);
   };
 
-  // Use type instead of title to check for existing credentials
   const incompleteCredentials = ADDABLE_CREDENTIALS.filter(
     (c) => !credentials.find((cred) => cred.id === c.type)
   );
 
-  // Helper to format expiry string or return null if invalid
   const formatExpiry = (expiry?: string | null): string | null => {
     if (!expiry) return null;
     const date = new Date(expiry);
@@ -189,7 +197,6 @@ const CredentialCards = () => {
     return format(date, 'dd MMM yyyy');
   };
 
-  // Helper component to render credential content
   const RenderCredentialContent = ({ content }: { content: Record<string, any> }) => {
     return (
       <View style={{ marginTop: 12 }}>
@@ -205,7 +212,6 @@ const CredentialCards = () => {
     );
   };
 
-  // *** ADDED: delete handler ***
   const handleDelete = async (type: string) => {
     try {
       const storedUserId = await SecureStore.getItemAsync('convexUserId');
@@ -242,7 +248,7 @@ const CredentialCards = () => {
             key={credential.id}
             style={[
               styles.card,
-              { marginTop: index === 0 ? 0 : -65, zIndex: index + 1 },
+              { marginTop: index === 0 ? 0 : -62, zIndex: index + 1 },
             ]}
             onPress={() => handleCardPress(credential)}
             activeOpacity={0.9}
@@ -288,7 +294,6 @@ const CredentialCards = () => {
               <Text style={[styles.modalContent, { marginTop: 12 }]}>No content available.</Text>
             )}
 
-            {/* Delete button ONLY for Proof of Age and Liveness Check */}
             {(selectedCredential?.id === CREDENTIAL_TYPES.PROOF_OF_AGE ||
               selectedCredential?.id === CREDENTIAL_TYPES.LIVENESS_CHECK) && (
               <TouchableOpacity
@@ -313,7 +318,6 @@ const CredentialCards = () => {
         </View>
       </Modal>
 
-      {/* Add Credential Modal */}
       <Modal visible={addModalVisible} animationType="fade" transparent>
         <View style={styles.modalBackground}>
           <View style={styles.modalCard}>
@@ -358,12 +362,14 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 20,
     fontWeight: 'bold',
+    marginBottom: 6,
   },
   addButton: {
     paddingVertical: 6,
     paddingHorizontal: 14,
     backgroundColor: '#FFD700',
     borderRadius: 20,
+    marginBottom: 3,
   },
   addButtonText: {
     color: '#000',
