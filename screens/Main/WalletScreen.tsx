@@ -14,7 +14,7 @@ const WalletScreen = () => {
       <ScrollableContainer>
         <WunderWalletOverview />
       </ScrollableContainer>
-      <FooterMenu />
+      {/* <FooterMenu /> */}
     </View>
   );
 };

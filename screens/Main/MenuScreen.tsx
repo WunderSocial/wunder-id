@@ -16,16 +16,20 @@ const MenuScreen = () => {
         <Text style={styles.header}>Settings</Text>
       </View>
 
+      <Pressable style={styles.item} onPress={() => navigation.navigate('Home')}>
+        <Text style={styles.itemText}>Home</Text>
+      </Pressable>
+
+      <Pressable style={styles.item} onPress={() => navigation.navigate('Security')}>
+        <Text style={styles.itemText}>Security</Text>
+      </Pressable>
+
       <Pressable style={styles.item} onPress={() => navigation.navigate('Terms')}>
         <Text style={styles.itemText}>Terms and Conditions</Text>
       </Pressable>
 
       <Pressable style={styles.item} onPress={() => navigation.navigate('Settings')}>
         <Text style={styles.itemText}>Settings</Text>
-      </Pressable>
-
-      <Pressable style={styles.item} onPress={() => navigation.navigate('Security')}>
-        <Text style={styles.itemText}>Security</Text>
       </Pressable>
 
       <Pressable style={styles.item} onPress={() => navigation.navigate('RemoveAccount')}>

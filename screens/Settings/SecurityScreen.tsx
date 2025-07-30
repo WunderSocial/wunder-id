@@ -229,7 +229,7 @@ const SecurityScreen = () => {
           />
         </View>
       </ScrollableContainer>
-      <FooterMenu />
+      {/* <FooterMenu /> */}
     </View>
   );
 };

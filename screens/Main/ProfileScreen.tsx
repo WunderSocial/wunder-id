@@ -15,7 +15,7 @@ const ProfileScreen = () => {
           <ProfileInfo />
         </View>
       </ScrollableContainer>
-      <FooterMenu />
+      {/* <FooterMenu /> */}
     </View>
   );
 };

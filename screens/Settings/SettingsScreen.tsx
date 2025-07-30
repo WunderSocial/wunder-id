@@ -14,7 +14,7 @@ const SettingsScreen = () => {
               <Text style={styles.sample}>Settings</Text>
         </View>
       </ScrollableContainer>
-      <FooterMenu />
+      {/* <FooterMenu /> */}
     </View>
   );
 };

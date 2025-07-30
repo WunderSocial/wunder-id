@@ -58,3 +58,23 @@ export const issueCredential = mutation({
     }
   },
 });
+
+// === MUTATION: Delete credential by type ===
+export const deleteCredentialByType = mutation({
+  args: {
+    userId: v.id('users'),
+    type: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const credential = await ctx.db
+      .query('credentials')
+      .withIndex('by_user_and_type', (q) =>
+        q.eq('userId', args.userId).eq('type', args.type)
+      )
+      .first();
+
+    if (credential) {
+      await ctx.db.delete(credential._id);
+    }
+  },
+});

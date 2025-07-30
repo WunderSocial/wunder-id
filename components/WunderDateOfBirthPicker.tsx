@@ -7,6 +7,7 @@ type DateOfBirthPickerProps = {
   value: string; // expects DD-MM-YYYY format
   onChange: (date: string) => void;
   placeholder?: string;
+  disabled?: boolean;  // NEW optional prop
 };
 
 const DateOfBirthPicker: React.FC<DateOfBirthPickerProps> = ({
@@ -14,6 +15,7 @@ const DateOfBirthPicker: React.FC<DateOfBirthPickerProps> = ({
   value,
   onChange,
   placeholder = 'DD-MM-YYYY',
+  disabled = false, // default to false
 }) => {
   const parseDate = (dateStr: string) => {
     if (!dateStr) return new Date('2000-01-01');
@@ -91,6 +93,7 @@ const DateOfBirthPicker: React.FC<DateOfBirthPickerProps> = ({
             placeholder="Day"
             zIndex={3000}
             zIndexInverse={1000}
+            disabled={disabled}  // <-- added here
           />
         </View>
         <View style={styles.column}>
@@ -107,6 +110,7 @@ const DateOfBirthPicker: React.FC<DateOfBirthPickerProps> = ({
             placeholder="Month"
             zIndex={2000}
             zIndexInverse={2000}
+            disabled={disabled}  // <-- added here
           />
         </View>
         <View style={styles.column}>
@@ -123,6 +127,7 @@ const DateOfBirthPicker: React.FC<DateOfBirthPickerProps> = ({
             placeholder="Year"
             zIndex={1000}
             zIndexInverse={3000}
+            disabled={disabled}  // <-- added here
           />
         </View>
       </View>
@@ -148,7 +153,6 @@ const styles = StyleSheet.create({
   },
   column: {
     flex: 1,
-    
   },
   picker: {
     backgroundColor: '#222',

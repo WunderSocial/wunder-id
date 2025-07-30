@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, Image, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, Image, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
 import { useQuery } from 'convex/react';
 import { api } from '../../convex/_generated/api';
@@ -49,6 +49,28 @@ const WunderIdCard = () => {
       : 'skip'
   );
 
+  // For Proof of Age credential (DOB verified)
+  const proofOfAgeCredential = useQuery(
+    api.credentials.hasCredential,
+    userId
+      ? {
+          userId,
+          type: CREDENTIAL_TYPES.PROOF_OF_AGE,
+        }
+      : 'skip'
+  );
+
+  // For Liveness Check credential (Name verified)
+  const livenessCredential = useQuery(
+    api.credentials.hasCredential,
+    userId
+      ? {
+          userId,
+          type: CREDENTIAL_TYPES.LIVENESS_CHECK,
+        }
+      : 'skip'
+  );
+
   useEffect(() => {
     const loadProfile = async () => {
       if (!profileCredential?.content) return;
@@ -78,6 +100,15 @@ const WunderIdCard = () => {
     navigation.navigate('CredentialEditor', { credentialType: CREDENTIAL_TYPES.BASIC_PROFILE });
   };
 
+  // Badge click handlers
+  const onPressDobBadge = () => {
+    Alert.alert('Date of Birth Verified', 'Your date of birth has been verified.');
+  };
+
+  const onPressNameBadge = () => {
+    Alert.alert('Liveness Verified', 'You have been verified as not a bot.');
+  };
+
   // Determine button label based on credential presence
   const buttonLabel = profileCredential ? 'Edit Profile' : 'Create Profile';
 
@@ -98,26 +129,47 @@ const WunderIdCard = () => {
           </View>
         </View>
 
-        {/* Bottom Row: Info on left, QR on right */}
+        {/* Bottom Row: Info on left */}
         <View style={styles.bottomRow}>
           <View style={styles.infoLeft}>
             <View style={styles.infoItem}>
               <Text style={styles.label}>Name:</Text>
-              <Text style={styles.valueInline}>{profile.name}</Text>
+              <View style={styles.valueWithBadge}>
+                <Text style={styles.valueInline}>{profile.name}</Text>
+                {livenessCredential && (
+                  <TouchableOpacity
+                    onPress={onPressNameBadge}
+                    style={styles.badgeContainer}
+                    accessibilityLabel="Liveness Verified Badge"
+                    accessibilityHint="Shows that user has passed liveness verification"
+                  >
+                    <Text style={styles.badgeTick}>✓</Text>
+                  </TouchableOpacity>
+                )}
+              </View>
             </View>
             <View style={styles.infoItem}>
               <Text style={styles.label}>D.O.B:</Text>
-              <Text style={styles.valueInline}>{profile.dob}</Text>
+              <View style={styles.valueWithBadge}>
+                <Text style={styles.valueInline}>{profile.dob}</Text>
+                {proofOfAgeCredential && (
+                  <TouchableOpacity
+                    onPress={onPressDobBadge}
+                    style={styles.badgeContainer}
+                    accessibilityLabel="Date of Birth Verified Badge"
+                    accessibilityHint="Shows that date of birth has been verified"
+                  >
+                    <Text style={styles.badgeTick}>✓</Text>
+                  </TouchableOpacity>
+                )}
+              </View>
             </View>
             <View style={styles.infoItem}>
               <Text style={styles.label}>Country:</Text>
               <Text style={styles.valueInline}>{profile.country}</Text>
             </View>
           </View>
-          {/* <Image
-            source={require('../../assets/wunder-social-qr-code.png')}
-            style={styles.qrCode}
-          /> */}
+          {/* QR Code omitted as per your original code */}
         </View>
 
         {/* Create/Edit Button */}
@@ -141,7 +193,7 @@ const styles = StyleSheet.create({
   },
   card: {
     backgroundColor: '#000',
-    borderColor: '#FFD700', // yellow
+    borderColor: '#FFD700', // yellow border
     borderWidth: 2,
     borderRadius: 16,
     padding: 20,
@@ -175,6 +227,7 @@ const styles = StyleSheet.create({
   infoItem: {
     flexDirection: 'row',
     marginBottom: 8,
+    alignItems: 'center',
   },
   label: {
     color: '#fff',
@@ -191,10 +244,24 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
   },
-  qrCode: {
-    width: 80,
-    height: 80,
-    marginLeft: 12,
+  valueWithBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  badgeContainer: {
+    backgroundColor: '#fff403', // Wunder yellow
+    borderRadius: 10,
+    width: 20,
+    height: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  badgeTick: {
+    color: '#000',
+    fontWeight: 'bold',
+    fontSize: 16,
+    lineHeight: 16,
   },
   button: {
     marginTop: 24,

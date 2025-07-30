@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, Alert } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import { View, Text, StyleSheet, Alert, Pressable } from 'react-native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import WunderInput from '@components/WunderInput';
 import WunderButton from '@components/WunderButton';
 import * as SecureStore from 'expo-secure-store';
@@ -27,6 +28,8 @@ const CreateEditProfileCredential = () => {
   const navigation = useNavigation<RootStackNavigationProp>();
   const issueCredential = useMutation(api.credentials.issueCredential);
 
+  const didAttemptEditDob = useRef(false);
+
   useEffect(() => {
     SecureStore.getItemAsync('convexUserId').then(setUserIdStr);
   }, []);
@@ -39,6 +42,16 @@ const CreateEditProfileCredential = () => {
       ? {
           userId,
           type: CREDENTIAL_TYPES.BASIC_PROFILE,
+        }
+      : 'skip'
+  );
+
+  const proofOfAgeCredential = useQuery(
+    api.credentials.hasCredential,
+    userIdStr
+      ? {
+          userId,
+          type: CREDENTIAL_TYPES.PROOF_OF_AGE,
         }
       : 'skip'
   );
@@ -65,6 +78,21 @@ const CreateEditProfileCredential = () => {
 
     loadProfileData();
   }, [profileCredential]);
+
+  const handleDobChange = (newDob: string) => {
+    if (proofOfAgeCredential) {
+      if (didAttemptEditDob.current) {
+        Alert.alert(
+          'Date of Birth Locked',
+          'Once your age is verified, you cannot change your date of birth.'
+        );
+      } else {
+        didAttemptEditDob.current = true;
+      }
+      return;
+    }
+    setDob(newDob);
+  };
 
   const handleSubmit = async () => {
     if (!name || !dob || !country || !city) {
@@ -112,18 +140,38 @@ const CreateEditProfileCredential = () => {
   };
 
   return (
-    <View style={styles.container}>
+    <KeyboardAwareScrollView
+      style={styles.container}
+      contentContainerStyle={styles.contentContainer}
+      enableOnAndroid
+      keyboardShouldPersistTaps="handled"
+      extraScrollHeight={20}
+    >
       <Text style={styles.heading}>Basic Profile</Text>
 
       <WunderInput label="Name" placeholder="Jane Doe" value={name} onChangeText={setName} />
 
-      <DateOfBirthPicker
-        value={dob}
-        onChange={setDob}
-        placeholder="DD-MM-YYYY"
-      />
+      <View style={styles.dobWrapper}>
+        <Pressable
+          disabled={!proofOfAgeCredential}
+          onPress={() => {
+            if (proofOfAgeCredential) {
+              Alert.alert(
+                'Date of Birth Locked',
+                'Once your age is verified, you cannot change your date of birth.'
+              );
+            }
+          }}
+        >
+          <DateOfBirthPicker
+            value={dob}
+            onChange={!proofOfAgeCredential ? handleDobChange : () => {}}
+            placeholder="DD-MM-YYYY"
+            disabled={!!proofOfAgeCredential}
+          />
+        </Pressable>
+      </View>
 
-      {/* ✅ Country Select Field */}
       <CountrySelect
         label="Country"
         placeholder="Select your country"
@@ -133,19 +181,21 @@ const CreateEditProfileCredential = () => {
 
       <WunderInput label="City" placeholder="e.g. Lisbon" value={city} onChangeText={setCity} />
 
-      <WunderButton  style={styles.btn}
+      <WunderButton
+        style={styles.btn}
         title="Save Profile"
         onPress={handleSubmit}
         loading={loading}
         disabled={!name || !dob || !country || !city}
       />
 
-      <WunderButton style={styles.btn}
+      <WunderButton
+        style={styles.btn}
         title="Cancel"
         onPress={() => navigation.goBack()}
         variant="secondary"
       />
-    </View>
+    </KeyboardAwareScrollView>
   );
 };
 
@@ -153,7 +203,10 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#000',
+  },
+  contentContainer: {
     padding: 16,
+    flexGrow: 1,
   },
   heading: {
     fontSize: 22,
@@ -164,6 +217,10 @@ const styles = StyleSheet.create({
   },
   btn: {
     marginTop: 20,
+  },
+  dobWrapper: {
+    zIndex: 9999,
+    marginBottom: 12,
   },
 });
 

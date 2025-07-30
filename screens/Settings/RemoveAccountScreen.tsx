@@ -124,7 +124,7 @@ const RemoveAccountScreen = () => {
           </View>
         </View>
       </ScrollableContainer>
-      <FooterMenu />
+      {/* <FooterMenu /> */}
 
       <Modal
         visible={showPinModal}

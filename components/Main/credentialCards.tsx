@@ -8,17 +8,17 @@ import {
   Dimensions,
   ScrollView,
   FlatList,
+  Alert,
 } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
 import { format } from 'date-fns';
-import { useQuery } from 'convex/react';
+import { useQuery, useMutation } from 'convex/react'; // <-- added useMutation
 import { api } from '../../convex/_generated/api';
 import { decryptSeed } from '@lib/crypto';
 import type { Id } from '../../convex/_generated/dataModel';
 import { useNavigation, NavigationProp } from '@react-navigation/native';
 import type { RootStackParamList } from '@navigation/types';
 
-// Import your credential type constants here
 import { CREDENTIAL_TYPES } from 'constants/credentials';
 
 const { width } = Dimensions.get('window');
@@ -32,11 +32,10 @@ type Credential = {
   expires?: string | null;
 };
 
-// Use constants for addable credentials
 const ADDABLE_CREDENTIALS: { type: string; title: string }[] = [
   { type: CREDENTIAL_TYPES.BASIC_PROFILE, title: 'Basic Profile' },
-  { type: CREDENTIAL_TYPES.WALLET_ADDRESS || 'wallet_address', title: 'Wallet Address' }, // in case it's missing in constants
-  { type: CREDENTIAL_TYPES.WUNDER_ID || 'wunder_id', title: 'Wunder ID' }, // fallback safety
+  { type: CREDENTIAL_TYPES.WALLET_ADDRESS || 'wallet_address', title: 'Wallet Address' },
+  { type: CREDENTIAL_TYPES.WUNDER_ID || 'wunder_id', title: 'Wunder ID' },
   { type: CREDENTIAL_TYPES.PROOF_OF_AGE, title: 'Proof of Age' },
   { type: CREDENTIAL_TYPES.LIVENESS_CHECK, title: 'Liveness Check' },
 ];
@@ -51,6 +50,9 @@ const CredentialCards = () => {
   const [selectedCredential, setSelectedCredential] = useState<Credential | null>(null);
   const [selectedContent, setSelectedContent] = useState<Record<string, any> | null>(null);
   const [addModalVisible, setAddModalVisible] = useState(false);
+
+  // *** ADDED: mutation hook for delete ***
+  const deleteCredential = useMutation(api.credentials.deleteCredentialByType);
 
   useEffect(() => {
     const loadUser = async () => {
@@ -76,14 +78,6 @@ const CredentialCards = () => {
     api.credentials.hasCredential,
     userId ? { userId, type: CREDENTIAL_TYPES.BASIC_PROFILE } : 'skip'
   );
-  // const verifiedEmail = useQuery(
-  //   api.credentials.hasCredential,
-  //   userId ? { userId, type: CREDENTIAL_TYPES.VERIFIED_EMAIL || 'verified_email' } : 'skip'
-  // );
-  // const verifiedPhone = useQuery(
-  //   api.credentials.hasCredential,
-  //   userId ? { userId, type: CREDENTIAL_TYPES.VERIFIED_PHONE || 'verified_phone' } : 'skip'
-  // );
   const livenessCheck = useQuery(
     api.credentials.hasCredential,
     userId ? { userId, type: CREDENTIAL_TYPES.LIVENESS_CHECK } : 'skip'
@@ -92,41 +86,13 @@ const CredentialCards = () => {
     api.credentials.hasCredential,
     userId ? { userId, type: CREDENTIAL_TYPES.PROOF_OF_AGE } : 'skip'
   );
-  // const proofOfIdentity = useQuery(
-  //   api.credentials.hasCredential,
-  //   userId ? { userId, type: CREDENTIAL_TYPES.PROOF_OF_IDENTITY || 'proof_of_identity' } : 'skip'
-  // );
-  // const proofOfAddress = useQuery(
-  //   api.credentials.hasCredential,
-  //   userId ? { userId, type: CREDENTIAL_TYPES.PROOF_OF_ADDRESS || 'proof_of_address' } : 'skip'
-  // );
-  // const proofOfFunds = useQuery(
-  //   api.credentials.hasCredential,
-  //   userId ? { userId, type: CREDENTIAL_TYPES.PROOF_OF_FUNDS || 'proof_of_funds' } : 'skip'
-  // );
-  // const linkBankCard = useQuery(
-  //   api.credentials.hasCredential,
-  //   userId ? { userId, type: CREDENTIAL_TYPES.LINK_BANK_CARD || 'link_bank_card' } : 'skip'
-  // );
-  // const daoMembership = useQuery(
-  //   api.credentials.hasCredential,
-  //   userId ? { userId, type: CREDENTIAL_TYPES.DAO_MEMBERSHIP || 'dao_membership' } : 'skip'
-  // );
 
-  // Map queries using constants as keys
   const queriesMap: Record<string, ReturnType<typeof useQuery>> = {
     [CREDENTIAL_TYPES.WUNDER_ID || 'wunder_id']: wunderIdCred,
     [CREDENTIAL_TYPES.WALLET_ADDRESS || 'wallet_address']: walletAddressCred,
     [CREDENTIAL_TYPES.BASIC_PROFILE]: basicProfile,
-    // [CREDENTIAL_TYPES.VERIFIED_EMAIL || 'verified_email']: verifiedEmail,
-    // [CREDENTIAL_TYPES.VERIFIED_PHONE || 'verified_phone']: verifiedPhone,
     [CREDENTIAL_TYPES.LIVENESS_CHECK]: livenessCheck,
     [CREDENTIAL_TYPES.PROOF_OF_AGE]: proofOfAge,
-    // [CREDENTIAL_TYPES.PROOF_OF_IDENTITY || 'proof_of_identity']: proofOfIdentity,
-    // [CREDENTIAL_TYPES.PROOF_OF_ADDRESS || 'proof_of_address']: proofOfAddress,
-    // [CREDENTIAL_TYPES.PROOF_OF_FUNDS || 'proof_of_funds']: proofOfFunds,
-    // [CREDENTIAL_TYPES.LINK_BANK_CARD || 'link_bank_card']: linkBankCard,
-    // [CREDENTIAL_TYPES.DAO_MEMBERSHIP || 'dao_membership']: daoMembership,
   };
 
   useEffect(() => {
@@ -135,7 +101,6 @@ const CredentialCards = () => {
 
       const dynamicCreds: Credential[] = [];
 
-      // Use the keys from queriesMap for iteration to align with constants keys
       for (const type of Object.keys(queriesMap)) {
         const cred = queriesMap[type];
         if (!cred?.content) continue;
@@ -143,7 +108,6 @@ const CredentialCards = () => {
         try {
           const decrypted = await decryptSeed(cred.content, decryptionKey);
           const parsed = JSON.parse(decrypted);
-          // Create title from constant string like 'proof_of_age' => 'Proof Of Age'
           const title = type
             .split('_')
             .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
@@ -183,15 +147,8 @@ const CredentialCards = () => {
     wunderIdCred,
     walletAddressCred,
     basicProfile,
-    // verifiedEmail,
-    // verifiedPhone,
     livenessCheck,
     proofOfAge,
-    // proofOfIdentity,
-    // proofOfAddress,
-    // proofOfFunds,
-    // linkBankCard,
-    // daoMembership,
   ]);
 
   const handleCardPress = async (credential: Credential) => {
@@ -232,6 +189,7 @@ const CredentialCards = () => {
     return format(date, 'dd MMM yyyy');
   };
 
+  // Helper component to render credential content
   const RenderCredentialContent = ({ content }: { content: Record<string, any> }) => {
     return (
       <View style={{ marginTop: 12 }}>
@@ -245,6 +203,26 @@ const CredentialCards = () => {
         ))}
       </View>
     );
+  };
+
+  // *** ADDED: delete handler ***
+  const handleDelete = async (type: string) => {
+    try {
+      const storedUserId = await SecureStore.getItemAsync('convexUserId');
+      if (!storedUserId) {
+        Alert.alert('Error', 'User ID not found');
+        return;
+      }
+      await deleteCredential({ userId: storedUserId as Id<'users'>, type });
+      setModalVisible(false);
+      setSelectedCredential(null);
+      setSelectedContent(null);
+      setCredentials((prev) => prev.filter((c) => c.id !== type));
+      Alert.alert('Deleted', `${type} credential deleted.`);
+    } catch (e) {
+      Alert.alert('Error', 'Failed to delete credential.');
+      console.warn('Delete error:', e);
+    }
   };
 
   return (
@@ -308,6 +286,17 @@ const CredentialCards = () => {
               </ScrollView>
             ) : (
               <Text style={[styles.modalContent, { marginTop: 12 }]}>No content available.</Text>
+            )}
+
+            {/* Delete button ONLY for Proof of Age and Liveness Check */}
+            {(selectedCredential?.id === CREDENTIAL_TYPES.PROOF_OF_AGE ||
+              selectedCredential?.id === CREDENTIAL_TYPES.LIVENESS_CHECK) && (
+              <TouchableOpacity
+                onPress={() => handleDelete(selectedCredential.id)}
+                style={[styles.closeButton, { backgroundColor: '#ff3b30', marginTop: 12 }]}
+              >
+                <Text style={[styles.closeButtonText, { color: '#fff' }]}>Delete</Text>
+              </TouchableOpacity>
             )}
 
             <TouchableOpacity
@@ -462,14 +451,16 @@ const styles = StyleSheet.create({
     paddingHorizontal: 25,
     alignSelf: 'center',
     marginTop: 12,
+    width: 104,
   },
   closeButtonText: {
     color: '#000',
     fontWeight: 'bold',
     fontSize: 16,
+    textAlign: 'center',
   },
   addListItem: {
-    paddingVertical: 12,
+    paddingVertical: 20,
     borderBottomColor: '#333',
     borderBottomWidth: 1,
   },

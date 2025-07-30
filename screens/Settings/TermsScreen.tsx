@@ -14,7 +14,7 @@ const TermsScreen = () => {
           <Text style={styles.sample}>Terms & Conditions</Text>
         </View>
       </ScrollableContainer>
-      <FooterMenu />
+      {/* <FooterMenu /> */}
     </View>
   );
 };

@@ -15,7 +15,7 @@ const HomeScreen = () => {
         <WunderIdCard />
         <CredentialCards />
       </ScrollableContainer>
-      <FooterMenu />
+      {/* <FooterMenu /> */}
     </View>
   );
 };
