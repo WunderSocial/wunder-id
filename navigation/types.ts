@@ -15,15 +15,7 @@ export type OnboardingStackParamList = {
 export type RootStackParamList = {
   Splash: undefined;
   Onboarding: NavigatorScreenParams<OnboardingStackParamList>;
-  Home: undefined;
+  Main: undefined;   // <== this wraps your drawer navigator
   EnterPin: undefined;
-  Profile: undefined;
-  Wallet: undefined;
-  Menu: undefined;
-  Terms: undefined;
-  Settings: undefined;
-  Security: undefined;
-  RemoveAccount: undefined;
-  CredentialEditor: { credentialType: string };
 };
  

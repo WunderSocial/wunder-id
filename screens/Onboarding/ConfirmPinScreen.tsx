@@ -122,7 +122,7 @@ const ConfirmPinScreen = ({ route, navigation }: Props) => {
               text: 'No',
               onPress: async () => {
                 await SecureStore.setItemAsync('accountComplete', 'true');
-                rootNavigation.replace('Home');
+                rootNavigation.replace('Main');
               },
               style: 'cancel',
             },
@@ -142,14 +142,14 @@ const ConfirmPinScreen = ({ route, navigation }: Props) => {
                 }
 
                 await SecureStore.setItemAsync('accountComplete', 'true');
-                rootNavigation.replace('Home');
+                rootNavigation.replace('Main');
               },
             },
           ]
         );
       } else {
         await SecureStore.setItemAsync('accountComplete', 'true');
-        rootNavigation.replace('Home');
+        rootNavigation.replace('Main');
       }
     } catch (err) {
       Alert.alert('Error', 'Failed to save PIN securely or create credentials');

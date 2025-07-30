@@ -79,6 +79,8 @@ const CreateEditProfileCredential = () => {
     loadProfileData();
   }, [profileCredential]);
 
+  if (!userIdStr) return null; // ✅ SAFE: after all hooks
+
   const handleDobChange = (newDob: string) => {
     if (proofOfAgeCredential) {
       if (didAttemptEditDob.current) {

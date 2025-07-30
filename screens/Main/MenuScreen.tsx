@@ -13,7 +13,7 @@ const MenuScreen = () => {
         <Pressable style={styles.pressable} onPress={() => navigation.goBack()}>
           <Icon name="arrow-left" size={24} color="white" />
         </Pressable>
-        <Text style={styles.header}>Settings</Text>
+        <Text style={styles.header}>Menu</Text>
       </View>
 
       <Pressable style={styles.item} onPress={() => navigation.navigate('Home')}>

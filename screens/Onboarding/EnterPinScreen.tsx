@@ -28,7 +28,7 @@ const EnterPinScreen = ({ navigation }: Props) => {
     const enteredPinHash = bytesToHex(sha256(enteredPin));
 
     if (enteredPinHash === storedPinHash) {
-      rootNavigation.replace('Home');
+      rootNavigation.replace('Main');
     } else {
       const newAttempts = attempts + 1;
       setAttempts(newAttempts);

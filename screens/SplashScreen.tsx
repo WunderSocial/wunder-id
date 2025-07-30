@@ -53,7 +53,7 @@ const SplashScreen = ({ navigation }: Props) => {
         });
 
         if (result.success) {
-          navigation.replace('Home');
+          navigation.replace('Main');
           return;
         }
       }

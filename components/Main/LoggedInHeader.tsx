@@ -3,11 +3,23 @@ import HeaderContainer from '@components/HeaderContainer';
 import Logo from '@components/WunderLogo';
 import { View, Pressable } from 'react-native';
 import Icon from 'react-native-vector-icons/Feather';
-import { useNavigation, NavigationProp } from '@react-navigation/native';
+import { useNavigation, DrawerActions } from '@react-navigation/native';
+import type { DrawerNavigationProp } from '@react-navigation/drawer';
 import LoginRequestBanner from '../LoginRequestBanner';
 
+type DrawerParamList = {
+  Home: undefined;
+  Profile: undefined;
+  Wallet: undefined;
+  Terms: undefined;
+  Settings: undefined;
+  Security: undefined;
+  RemoveAccount: undefined;
+  CredentialEditor: undefined;
+};
+
 const LoggedInHeader = () => {
-  const navigation = useNavigation<NavigationProp<any>>();
+  const navigation = useNavigation<DrawerNavigationProp<DrawerParamList>>();
 
   return (
     <HeaderContainer>
@@ -24,18 +36,18 @@ const LoggedInHeader = () => {
         <Pressable
           onPress={() => navigation.navigate('Home')}
           hitSlop={10}
-          accessibilityLabel="Home"
-          accessibilityHint="Navigate to Home screen"
+          accessibilityLabel="Go to home screen"
+          accessibilityHint="Navigates to the Home screen"
         >
           <Logo />
         </Pressable>
 
         <Pressable
-          onPress={() => navigation.navigate('Menu')}
+          onPress={() => navigation.dispatch(DrawerActions.openDrawer())}
           hitSlop={10}
           style={{ padding: 8 }}
           accessibilityLabel="Menu"
-          accessibilityHint="Navigate to Menu screen"
+          accessibilityHint="Open the menu drawer"
         >
           <Icon name="settings" size={28} color="white" />
         </Pressable>
