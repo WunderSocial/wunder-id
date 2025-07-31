@@ -48,6 +48,7 @@ export default defineSchema({
     status: v.union(v.literal('pending'), v.literal('accepted'), v.literal('declined'), v.literal('expired')),
     createdAt: v.number(),
     expiresAt: v.number(),
+    requestingSite: v.string(),
   }).index('by_wunderId', ['wunderId']),
 });
 

@@ -4,6 +4,7 @@ import * as SecureStore from 'expo-secure-store';
 import * as LocalAuthentication from 'expo-local-authentication';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '@navigation/types';
+import CustomLoader from '@components/CustomLoader';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Splash'>;
 
@@ -66,7 +67,7 @@ const SplashScreen = ({ navigation }: Props) => {
 
   return (
     <View style={styles.container}>
-      <ActivityIndicator size="large" color="#fff403" />
+      <CustomLoader />
     </View>
   );
 };

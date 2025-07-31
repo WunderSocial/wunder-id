@@ -5,19 +5,52 @@ import {
   Platform,
   StyleSheet,
   View,
+  Text,
 } from 'react-native';
+import { useRoute, useFocusEffect } from '@react-navigation/native';
+
+import LoggedInHeader from '@components/Main/LoggedInHeader';
 import CreateEditProfileCredential from '@components/credentials/createEditProfileCredential';
 import CreateEditProofOfAgeCredential from '@components/credentials/createProofOfAgeCredential';
 import CreateEditLivenessCheckCredential from '@components/credentials/createLivenessCheckCredential';
-import { useRoute } from '@react-navigation/native';
-import { CREDENTIAL_TYPES } from 'constants/credentials';
-import LoggedInHeader from '@components/Main/LoggedInHeader';
 
-const HEADER_HEIGHT = 60; // Adjust this to your LoggedInHeader height
+import { MainDrawerParamList } from '@navigation/types';
+import { RouteProp } from '@react-navigation/native';
+import { CREDENTIAL_TYPES } from 'constants/credentials';
+
+const HEADER_HEIGHT = 60;
+
+type CredentialEditorRouteProp = RouteProp<MainDrawerParamList, 'CredentialEditor'>;
 
 const CredentialEditorScreen = () => {
-  const route = useRoute();
-  const { credentialType } = route.params as { credentialType: string };
+  const { params } = useRoute<CredentialEditorRouteProp>();
+  const credentialType = params?.credentialType;
+
+  const [focusKey, setFocusKey] = React.useState(0);
+
+  useFocusEffect(
+    React.useCallback(() => {
+      // Increment key on focus to trigger re-mount of form
+      setFocusKey((prev) => prev + 1);
+    }, [])
+  );
+
+  const renderForm = () => {
+    if (!credentialType) {
+      return <Text style={styles.errorText}>Missing credential type</Text>;
+    }
+
+    switch (credentialType) {
+      case CREDENTIAL_TYPES.BASIC_PROFILE:
+        return <CreateEditProfileCredential key={`profile-${focusKey}`} />;
+      case CREDENTIAL_TYPES.PROOF_OF_AGE:
+        return <CreateEditProofOfAgeCredential key={`age-${focusKey}`} />;
+      case CREDENTIAL_TYPES.LIVENESS_CHECK:
+        return <CreateEditLivenessCheckCredential key={`liveness-${focusKey}`} />;
+      default:
+        return <Text style={styles.errorText}>Invalid credential type</Text>;
+    }
+  };
 
   return (
     <KeyboardAvoidingView
@@ -30,17 +63,7 @@ const CredentialEditorScreen = () => {
         contentContainerStyle={styles.scrollContent}
         keyboardShouldPersistTaps="handled"
       >
-        <View style={styles.inner}>
-          {credentialType === CREDENTIAL_TYPES.BASIC_PROFILE && (
-            <CreateEditProfileCredential />
-          )}
-          {credentialType === CREDENTIAL_TYPES.PROOF_OF_AGE && (
-            <CreateEditProofOfAgeCredential />
-          )}
-          {credentialType === CREDENTIAL_TYPES.LIVENESS_CHECK && (
-            <CreateEditLivenessCheckCredential />
-          )}
-        </View>
+        <View style={styles.inner}>{renderForm()}</View>
       </ScrollView>
     </KeyboardAvoidingView>
   );
@@ -57,6 +80,11 @@ const styles = StyleSheet.create({
   },
   inner: {
     padding: 16,
+  },
+  errorText: {
+    color: 'red',
+    textAlign: 'center',
+    marginTop: 32,
   },
 });
 

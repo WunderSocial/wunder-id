@@ -8,6 +8,10 @@ export default function LoginRequestModal() {
   const [shortWunderId, setShortWunderId] = useState<string | null>(null);
   const [refreshToken, setRefreshToken] = useState(0);
   const [visible, setVisible] = useState(false);
+  const [accepted, setAccepted] = useState(false);
+  const [declined, setDeclined] = useState(false);
+  const [countdown, setCountdown] = useState(5);
+  const [siteName, setSiteName] = useState<string>('an app');
 
   useEffect(() => {
     const fetchWunderId = async () => {
@@ -28,17 +32,51 @@ export default function LoginRequestModal() {
   const respondToRequest = useMutation(api.respondToRequest.respondToRequest);
 
   useEffect(() => {
-    setVisible(!!pendingRequest);
+    if (pendingRequest) {
+      setVisible(true);
+      if (pendingRequest.requestingSite) {
+        setSiteName(pendingRequest.requestingSite);
+      }
+    }
   }, [pendingRequest]);
+
+  const startCountdown = (onComplete: () => void) => {
+    setCountdown(5);
+    const interval = setInterval(() => {
+      setCountdown((prev) => {
+        if (prev <= 1) {
+          clearInterval(interval);
+          onComplete();
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+  };
 
   const handleResponse = async (status: 'accepted' | 'declined') => {
     if (!pendingRequest) return;
+
     await respondToRequest({ requestId: pendingRequest._id, status });
-    setVisible(false);
-    setRefreshToken((k) => k + 1);
+
+    if (status === 'accepted') {
+      setAccepted(true);
+      startCountdown(() => {
+        setAccepted(false);
+        setVisible(false);
+        setRefreshToken((k) => k + 1);
+      });
+    } else {
+      setDeclined(true);
+      startCountdown(() => {
+        setDeclined(false);
+        setVisible(false);
+        setRefreshToken((k) => k + 1);
+      });
+    }
   };
 
-  if (shortWunderId === null || pendingRequest === undefined) return null;
+  if (shortWunderId === null) return null;
 
   return (
     <Modal
@@ -49,16 +87,28 @@ export default function LoginRequestModal() {
     >
       <View style={styles.overlay}>
         <View style={styles.modal}>
-          {pendingRequest ? (
+          {pendingRequest || accepted || declined ? (
             <>
               <Text style={styles.title}>Login Request</Text>
-              <Text style={styles.message}>
-                The Wunder ID demo app is requesting authorisation to login.
-              </Text>
-              <View style={styles.buttons}>
-                <Button title="Accept" onPress={() => handleResponse('accepted')} color="#fff403" />
-                <Button title="Decline" onPress={() => handleResponse('declined')} color="#FF5A5F" />
-              </View>
+              {accepted ? (
+                <Text style={styles.message}>
+                  {`Please return to ${siteName} to complete the process.\n\nClosing in ${countdown}`}
+                </Text>
+              ) : declined ? (
+                <Text style={styles.message}>
+                  {`You have declined to login to ${siteName}, the request has been cancelled.\n\nClosing in ${countdown}`}
+                </Text>
+              ) : (
+                <>
+                  <Text style={styles.message}>
+                    {pendingRequest?.requestingSite || 'An app'} is requesting authorisation to login.
+                  </Text>
+                  <View style={styles.buttons}>
+                    <Button title="Accept" onPress={() => handleResponse('accepted')} color="#fff403" />
+                    <Button title="Decline" onPress={() => handleResponse('declined')} color="#FF5A5F" />
+                  </View>
+                </>
+              )}
             </>
           ) : (
             <View style={{ alignItems: 'center' }}>
@@ -84,8 +134,10 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     padding: 24,
     marginHorizontal: 20,
-    width: '90%',
+    width: '80%',
     elevation: 5,
+    borderColor: '#fff403',
+    borderWidth: 2,
   },
   title: {
     color: '#fff',

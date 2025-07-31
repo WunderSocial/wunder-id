@@ -18,6 +18,7 @@ export const getPendingRequest = query({
 
     return {
       _id: request._id,
+      requestingSite: request.requestingSite ?? 'An unknown app',
       createdAt: request.createdAt,
     };
   },

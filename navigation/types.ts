@@ -19,3 +19,13 @@ export type RootStackParamList = {
   EnterPin: undefined;
 };
  
+export type MainDrawerParamList = {
+  Home: undefined;
+  Wallet: undefined;
+  Profile: undefined;
+  Terms: undefined;
+  Settings: undefined;
+  Security: undefined;
+  RemoveAccount: undefined;
+  CredentialEditor: { credentialType: string };
+};

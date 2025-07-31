@@ -1,5 +1,5 @@
 import 'dotenv/config';
-
+ 
 export default {
   expo: {
     name: 'Wunder ID',
@@ -8,7 +8,7 @@ export default {
     orientation: 'portrait',
     userInterfaceStyle: 'light',
     newArchEnabled: true,
-    icon: './assets/icon.png',
+    icon: '.yellow-app-icon.png',
     splash: {
       image: './assets/splash-icon.png',
       resizeMode: 'contain',

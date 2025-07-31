@@ -3,8 +3,11 @@ import { internal } from '../_generated/api';
 import { v } from 'convex/values';
 
 export const sendLoginRequest = mutation({
-  args: { wunderId: v.string() },
-  handler: async (ctx, { wunderId }) => {
+  args: {
+    wunderId: v.string(),
+    requestingSite: v.string(),
+  },
+  handler: async (ctx, { wunderId, requestingSite }) => {
     const user = await ctx.db
       .query('users')
       .withIndex('by_username', (q) => q.eq('username', wunderId))
@@ -25,6 +28,7 @@ export const sendLoginRequest = mutation({
 
     const loginRequestId = await ctx.db.insert('loginRequests', {
       wunderId,
+      requestingSite,
       status: 'pending',
       createdAt: Date.now(),
       expiresAt: Date.now() + 60_000,
@@ -36,6 +40,7 @@ export const sendLoginRequest = mutation({
       {
         pushToken: device.pushToken,
         loginRequestId,
+        requestingSite,
       }
     );
 
