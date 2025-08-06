@@ -32,6 +32,15 @@ const CreateLivenessCheckCredential = () => {
       console.log('Received liveness result from WebView:', data);
       setLastResult(data);
 
+      if (data.type === 'LIVENESS_FAILED') {
+        Alert.alert(
+          'Liveness Check Failed',
+          data.reason || 'Please try again.',
+          [{ text: 'Close', onPress: () => setWebviewVisible(false) }]
+        );
+        return;
+      }
+
       if (!convexUserId) {
         throw new Error('Missing Convex user ID');
       }
@@ -65,7 +74,7 @@ const CreateLivenessCheckCredential = () => {
       console.error('Error handling liveness result:', error);
       Alert.alert('Error', String(error));
     } finally {
-      setWebviewVisible(false); // close WebView after result
+      setWebviewVisible(false);
       setLoading(false);
     }
   };
@@ -75,7 +84,7 @@ const CreateLivenessCheckCredential = () => {
       Alert.alert('Error', 'Missing Convex ID');
       return;
     }
-    setLastResult(null); // reset previous result
+    setLastResult(null);
     setWebviewVisible(true);
   };
 
@@ -120,6 +129,15 @@ const CreateLivenessCheckCredential = () => {
             allowsFullscreenVideo
             allowsCameraAccess
             allowsMicrophoneAccess
+            injectedJavaScript={`
+              (function() {
+                if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                  window.ReactNativeWebView.postMessage("✅ getUserMedia available");
+                } else {
+                  window.ReactNativeWebView.postMessage("❌ getUserMedia not available");
+                }
+              })();
+            `}
           />
         )}
       </Modal>

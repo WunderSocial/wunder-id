@@ -1,11 +1,11 @@
 import Expo
 import React
 import ReactAppDependencyProvider
-import WebKit
 
 @UIApplicationMain
 public class AppDelegate: ExpoAppDelegate {
   var window: UIWindow?
+
   var reactNativeDelegate: ExpoReactNativeFactoryDelegate?
   var reactNativeFactory: RCTReactNativeFactory?
 
@@ -27,10 +27,6 @@ public class AppDelegate: ExpoAppDelegate {
       withModuleName: "main",
       in: window,
       launchOptions: launchOptions)
-
-    // ✅ Enable camera & microphone access in WebView
-    let webConfig = WKWebViewConfiguration()
-    webConfig.mediaTypesRequiringUserActionForPlayback = []
 #endif
 
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
