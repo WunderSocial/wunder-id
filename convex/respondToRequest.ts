@@ -5,8 +5,9 @@ export const respondToRequest = mutation({
   args: {
     requestId: v.id('loginRequests'),
     status: v.union(v.literal('accepted'), v.literal('declined')),
+    reason: v.optional(v.string()),
   },
-  handler: async (ctx, { requestId, status }) => {
+  handler: async (ctx, { requestId, status, reason }) => {
     const existing = await ctx.db.get(requestId);
     if (!existing) {
       throw new Error('Request not found');
@@ -19,7 +20,7 @@ export const respondToRequest = mutation({
     await ctx.db.patch(requestId, {
       status,
       expiresAt: Date.now(),
+      reason,
     });
   },
 });
- 

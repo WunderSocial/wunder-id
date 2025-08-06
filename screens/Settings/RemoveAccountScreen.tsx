@@ -49,69 +49,73 @@ const RemoveAccountScreen = () => {
   };
 
   const confirmReset = async (pin: string) => {
-    try {
-      const enteredPinHash = bytesToHex(sha256(pin));
-      const storedPinHash = await SecureStore.getItemAsync('userPinHash');
+  try {
+    const enteredPinHash = bytesToHex(sha256(pin));
+    const storedPinHash = await SecureStore.getItemAsync('userPinHash');
 
-      if (enteredPinHash !== storedPinHash) {
-        pinInputRef.current?.triggerShake();
-        setEnteredPin('');
-        pinInputRef.current?.focusFirst();
-        return;
-      }
-
-      setShowPinModal(false);
-      ToastAndroid.show('Removing your account...', ToastAndroid.LONG);
-
-      const hashedFingerprint = await SecureStore.getItemAsync('hashedDeviceFingerprint');
-      const convexUserId = await SecureStore.getItemAsync('convexUserId');
-
-      if (!hashedFingerprint || !convexUserId) {
-        throw new Error('Missing required secure values');
-      }
-
-      await deregisterDevice({
-        userId: convexUserId as Id<'users'>,
-        hashedFingerprint,
-      });
-
-      const keysToDelete = [
-        'walletAddress',
-        'encryptedSeed',
-        'encryptedPrivateKey',
-        'passwordHash',
-        'convexUserId',
-        'userId',
-        'decryptionKey',
-        'wunderId',
-        'hashedDeviceFingerprint',
-        'restoredSeedPhrase',
-        'isRestoring',
-        'pushToken',
-        'userPinHash',
-        'biometricsEnabled',
-        'biometricEncryptionKey',
-        'accountComplete',
-      ];
-
-      await Promise.all(
-        keysToDelete.map(async (key) => {
-          await SecureStore.deleteItemAsync(key);
-        })
-      );
-
-      setTimeout(() => {
-        resetAppState();
-        // Reset to Splash (which is in Root stack)
-        navigation.reset({
-          index: 0,
-          routes: [{ name: 'Splash' as never }], // TypeScript fix
-        });
-      }, 500);
-    } catch (err) {
-      Alert.alert('Error', String(err));
+    if (enteredPinHash !== storedPinHash) {
+      pinInputRef.current?.triggerShake();
+      setEnteredPin('');
+      pinInputRef.current?.focusFirst();
+      return;
     }
-  };
+
+    setShowPinModal(false);
+    ToastAndroid.show('Removing your account...', ToastAndroid.LONG);
+
+    const hashedFingerprint = await SecureStore.getItemAsync('hashedDeviceFingerprint');
+    const convexUserId = await SecureStore.getItemAsync('convexUserId');
+
+    if (!hashedFingerprint || !convexUserId) {
+      throw new Error('Missing required secure values');
+    }
+
+    await deregisterDevice({
+      userId: convexUserId as Id<'users'>,
+      hashedFingerprint,
+    });
+
+    // Continue with reset logic below...
+
+  } catch (err) {
+    Alert.alert('Error', String(err));
+  } finally {
+    // Always delete accountComplete so app can reset
+    await SecureStore.deleteItemAsync('accountComplete');
+
+    const keysToDelete = [
+      'walletAddress',
+      'encryptedSeed',
+      'encryptedPrivateKey',
+      'passwordHash',
+      'convexUserId',
+      'userId',
+      'decryptionKey',
+      'wunderId',
+      'hashedDeviceFingerprint',
+      'restoredSeedPhrase',
+      'isRestoring',
+      'pushToken',
+      'userPinHash',
+      'biometricsEnabled',
+      'biometricEncryptionKey',
+    ];
+
+    await Promise.all(
+      keysToDelete.map(async (key) => {
+        await SecureStore.deleteItemAsync(key);
+      })
+    );
+
+    setTimeout(() => {
+      resetAppState();
+      navigation.reset({
+        index: 0,
+        routes: [{ name: 'Splash' as never }],
+      });
+    }, 500);
+  }
+};
 
   return (
     <View style={styles.container}>

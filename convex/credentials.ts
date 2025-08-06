@@ -1,6 +1,7 @@
 import { query, mutation } from './_generated/server';
 import { v } from 'convex/values';
 
+
 // === QUERY: Check if user has credential ===
 export const hasCredential = query({
   args: {

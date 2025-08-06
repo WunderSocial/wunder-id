@@ -8,7 +8,7 @@ export default {
     orientation: 'portrait',
     userInterfaceStyle: 'light',
     newArchEnabled: true,
-    icon: '.yellow-app-icon.png',
+    icon: './assets/icon.png',
     splash: {
       image: './assets/splash-icon.png',
       resizeMode: 'contain',
@@ -17,6 +17,10 @@ export default {
     ios: {
       bundleIdentifier: 'com.anonymous.wunderid',
       supportsTablet: true,
+      infoPlist: {
+        NSCameraUsageDescription: "We need camera access for liveness verification.",
+        NSMicrophoneUsageDescription: "We need microphone access for liveness verification.",
+      },
     },
     android: {
       package: 'com.anonymous.wunderid',

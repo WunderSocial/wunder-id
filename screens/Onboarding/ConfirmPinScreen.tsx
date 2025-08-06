@@ -108,7 +108,7 @@ const ConfirmPinScreen = ({ route, navigation }: Props) => {
 
       if (!userIdStr || !decryptionKey) throw new Error('Missing userId or decryptionKey');
 
-      const userId = userIdStr as unknown as Id<'users'>;
+      const userId = userIdStr as Id<'users'>;
 
       // Create WunderID and Wallet Address credentials
       await handleCreateWunderIdAndWalletCreds(userId, decryptionKey);

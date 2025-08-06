@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, Alert } from 'react-native';
+import { View, Text, StyleSheet, Alert, Modal } from 'react-native';
+import { WebView } from 'react-native-webview';
 import WunderButton from '@components/WunderButton';
 import * as SecureStore from 'expo-secure-store';
-import { encryptSeed, decryptSeed } from '@lib/crypto';
-import { useMutation, useQuery } from 'convex/react';
+import { encryptSeed } from '@lib/crypto';
+import { useMutation } from 'convex/react';
 import { api } from '../../convex/_generated/api';
 import type { Id } from '../../convex/_generated/dataModel';
 import { CREDENTIAL_TYPES } from 'constants/credentials';
@@ -13,124 +14,90 @@ import type { RootStackParamList } from '@navigation/types';
 type RootStackNavigationProp = NavigationProp<RootStackParamList>;
 
 const CreateLivenessCheckCredential = () => {
-  const [name, setName] = useState('');
+  const [convexUserId, setConvexUserId] = useState<string | null>(null);
+  const [webviewVisible, setWebviewVisible] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [initialised, setInitialised] = useState(false);
-  const [userIdStr, setUserIdStr] = useState<string | null>(null);
+  const [lastResult, setLastResult] = useState<any | null>(null);
 
   const navigation = useNavigation<RootStackNavigationProp>();
   const issueCredential = useMutation(api.credentials.issueCredential);
 
-  // Load userId from secure store
   useEffect(() => {
-    SecureStore.getItemAsync('convexUserId').then(setUserIdStr);
+    SecureStore.getItemAsync('convexUserId').then(setConvexUserId);
   }, []);
 
-  const userId = userIdStr as unknown as Id<'users'>;
-
-  // Load basic profile credential to get user's name
-  const profileCredential = useQuery(
-    api.credentials.hasCredential,
-    userIdStr
-      ? {
-          userId,
-          type: CREDENTIAL_TYPES.BASIC_PROFILE,
-        }
-      : 'skip'
-  );
-
-  useEffect(() => {
-    const loadNameFromProfile = async () => {
-      if (!profileCredential || !profileCredential.content || initialised) return;
-
-      const decryptionKey = await SecureStore.getItemAsync('decryptionKey');
-      if (!decryptionKey) return;
-
-      try {
-        const decryptedJson = await decryptSeed(profileCredential.content, decryptionKey);
-        const data = JSON.parse(decryptedJson);
-        if (data.name) {
-          setName(data.name);
-        }
-        setInitialised(true);
-      } catch (e) {
-        console.warn('Failed to decrypt profile credential:', e);
-      }
-    };
-
-    loadNameFromProfile();
-  }, [profileCredential]);
-
-  const handleConfirm = async () => {
-    if (!name) {
-      Alert.alert('Missing Name', 'User name is required for liveness check.');
-      return;
-    }
-
+  const handleMessage = async (event: any) => {
     try {
-      setLoading(true);
+      const data = JSON.parse(event.nativeEvent.data);
+      console.log('Received liveness result from WebView:', data);
+      setLastResult(data);
 
-      const decryptionKey = await SecureStore.getItemAsync('decryptionKey');
-      const userIdStored = await SecureStore.getItemAsync('convexUserId');
-
-      if (!decryptionKey || !userIdStored) {
-        throw new Error('Missing secure credentials or user ID');
+      if (!convexUserId) {
+        throw new Error('Missing Convex user ID');
       }
 
-      const livenessData = {
-        name,
-        livenessCheck: true,
-      };
+      const decryptionKey = await SecureStore.getItemAsync('decryptionKey');
+      if (!decryptionKey) {
+        throw new Error('Missing decryption key');
+      }
 
-      const jsonContent = JSON.stringify(livenessData);
-      const encryptedContent = await encryptSeed(jsonContent, decryptionKey);
+      if (data.status && data.status.startsWith('PASS')) {
+        // Save full payload as encrypted JSON
+        const jsonContent = JSON.stringify(data);
+        const encryptedContent = await encryptSeed(jsonContent, decryptionKey);
 
-      await issueCredential({
-        userId: userIdStored as unknown as Id<'users'>,
-        type: CREDENTIAL_TYPES.LIVENESS_CHECK,
-        content: encryptedContent,
-      });
+        await issueCredential({
+          userId: convexUserId as unknown as Id<'users'>,
+          type: CREDENTIAL_TYPES.LIVENESS_CHECK,
+          content: encryptedContent,
+        });
 
-      Alert.alert(
-        'Success',
-        'Liveness Check credential saved.',
-        [
-          {
-            text: 'OK',
-            onPress: () => navigation.goBack(),
-          },
-        ],
-        { cancelable: false }
-      );
+        Alert.alert('Success', 'Liveness Check credential saved.', [
+          { text: 'OK', onPress: () => navigation.goBack() },
+        ]);
+      } else {
+        Alert.alert(
+          'Liveness Check Failed',
+          'Please try again in better lighting or adjust your camera.'
+        );
+      }
     } catch (error) {
-      console.error('Error saving liveness check credential:', error);
+      console.error('Error handling liveness result:', error);
       Alert.alert('Error', String(error));
     } finally {
+      setWebviewVisible(false); // close WebView after result
       setLoading(false);
     }
+  };
+
+  const handleStartCheck = () => {
+    if (!convexUserId) {
+      Alert.alert('Error', 'Missing Convex ID');
+      return;
+    }
+    setLastResult(null); // reset previous result
+    setWebviewVisible(true);
   };
 
   return (
     <View style={styles.container}>
       <Text style={styles.heading}>Liveness Check</Text>
 
-      {/* Camera Placeholder */}
-      <View style={styles.cameraPlaceholder}>
-        <Text style={styles.cameraPlaceholderText}>Camera view goes here</Text>
-      </View>
-
-      <View style={styles.readOnlyField}>
-        <Text style={styles.label}>Name:</Text>
-        <Text style={styles.value}>{name || 'Loading...'}</Text>
-      </View>
-
       <WunderButton
         style={styles.btn}
-        title="Confirm"
-        onPress={handleConfirm}
+        title="Start Liveness Check"
+        onPress={handleStartCheck}
         loading={loading}
-        disabled={!name || loading}
       />
+
+      {lastResult && lastResult.status && lastResult.status.startsWith('FAIL') && (
+        <WunderButton
+          style={styles.btn}
+          title="Retry Liveness Check"
+          onPress={handleStartCheck}
+          variant="secondary"
+        />
+      )}
 
       <WunderButton
         style={styles.btn}
@@ -139,6 +106,23 @@ const CreateLivenessCheckCredential = () => {
         variant="secondary"
         disabled={loading}
       />
+
+      <Modal visible={webviewVisible} animationType="slide">
+        {convexUserId && (
+          <WebView
+            source={{ uri: `https://wunder-liveness-check.vercel.app/liveness?id=${convexUserId}` }}
+            onMessage={handleMessage}
+            javaScriptEnabled
+            domStorageEnabled
+            startInLoadingState
+            allowsInlineMediaPlayback
+            mediaPlaybackRequiresUserAction={false}
+            allowsFullscreenVideo
+            allowsCameraAccess
+            allowsMicrophoneAccess
+          />
+        )}
+      </Modal>
     </View>
   );
 };
@@ -155,33 +139,6 @@ const styles = StyleSheet.create({
     color: 'white',
     marginBottom: 24,
     textAlign: 'center',
-  },
-  cameraPlaceholder: {
-    height: 180,
-    borderRadius: 12,
-    backgroundColor: '#222',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 24,
-    borderWidth: 2,
-    borderColor: '#555',
-  },
-  cameraPlaceholderText: {
-    color: '#888',
-    fontSize: 16,
-    fontStyle: 'italic',
-  },
-  readOnlyField: {
-    marginBottom: 20,
-  },
-  label: {
-    color: '#aaa',
-    fontSize: 14,
-  },
-  value: {
-    color: 'white',
-    fontSize: 18,
-    marginTop: 4,
   },
   btn: {
     marginTop: 20,

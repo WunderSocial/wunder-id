@@ -3,30 +3,61 @@ import { View, Text, Button, StyleSheet, Modal, ActivityIndicator } from 'react-
 import * as SecureStore from 'expo-secure-store';
 import { useMutation, useQuery } from 'convex/react';
 import { api } from '../convex/_generated/api';
+import { decryptSeed } from '@lib/crypto';
+import type { Id } from 'convex/_generated/dataModel';
+import CryptoJS from 'crypto-js';
 
 export default function LoginRequestModal() {
-  const [shortWunderId, setShortWunderId] = useState<string | null>(null);
+  const [wunderId, setWunderId] = useState<string | null>(null);
+  const [userId, setUserId] = useState<string | null>(null);
+  const [privateKey, setPrivateKey] = useState<string | null>(null);
+  const [decryptionKey, setDecryptionKey] = useState<string | null>(null);
   const [refreshToken, setRefreshToken] = useState(0);
   const [visible, setVisible] = useState(false);
   const [accepted, setAccepted] = useState(false);
   const [declined, setDeclined] = useState(false);
   const [countdown, setCountdown] = useState(5);
   const [siteName, setSiteName] = useState<string>('an app');
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [hasResponded, setHasResponded] = useState(false);
 
   useEffect(() => {
-    const fetchWunderId = async () => {
-      const fullId = await SecureStore.getItemAsync('wunderId');
-      if (fullId) {
-        const shortId = fullId.split('.')[0];
-        setShortWunderId(shortId);
+    const fetchStoredIds = async () => {
+      const storedWunderId = await SecureStore.getItemAsync('wunderId');
+      const storedUserId = await SecureStore.getItemAsync('convexUserId');
+      const encryptedPrivateKey = await SecureStore.getItemAsync('encryptedPrivateKey');
+      const storedDecryptionKey = await SecureStore.getItemAsync('decryptionKey');
+
+      if (storedWunderId) setWunderId(storedWunderId);
+      if (storedUserId) setUserId(storedUserId);
+      if (storedDecryptionKey) setDecryptionKey(storedDecryptionKey);
+
+      if (encryptedPrivateKey && storedDecryptionKey) {
+        try {
+          const bytes = CryptoJS.AES.decrypt(encryptedPrivateKey, storedDecryptionKey);
+          const decryptedPrivateKey = bytes.toString(CryptoJS.enc.Utf8);
+          setPrivateKey(decryptedPrivateKey);
+        } catch (e) {}
       }
     };
-    fetchWunderId();
+    fetchStoredIds();
   }, []);
+
+  const baseWunderId = wunderId ? wunderId.split('.')[0] : null;
 
   const pendingRequest = useQuery(
     api.getPendingRequest.getPendingRequest,
-    shortWunderId ? { wunderId: shortWunderId, refreshToken } : 'skip'
+    baseWunderId ? { wunderId: baseWunderId, refreshToken } : 'skip'
+  );
+
+  const proofOfAgeCredential = useQuery(
+    api.credentials.hasCredential,
+    userId ? { userId: userId as Id<'users'>, type: 'proof_of_age' } : 'skip'
+  );
+
+  const livenessCheckCredential = useQuery(
+    api.credentials.hasCredential,
+    userId ? { userId: userId as Id<'users'>, type: 'liveness_check' } : 'skip'
   );
 
   const respondToRequest = useMutation(api.respondToRequest.respondToRequest);
@@ -39,6 +70,84 @@ export default function LoginRequestModal() {
       }
     }
   }, [pendingRequest]);
+
+  useEffect(() => {
+    if (!pendingRequest || !decryptionKey) return;
+
+    if (
+      proofOfAgeCredential === undefined ||
+      livenessCheckCredential === undefined
+    ) {
+      return;
+    }
+
+    const { parameters } = pendingRequest;
+    let reason: string | null = null;
+
+    const isOver18 = (dobISO: string) => {
+      const birthDate = new Date(dobISO);
+      if (isNaN(birthDate.getTime())) return false;
+      const now = new Date();
+      const eighteenYearsAgo = new Date(now.getFullYear() - 18, now.getMonth(), now.getDate());
+      return birthDate <= eighteenYearsAgo;
+    };
+
+    const checkCredentials = async () => {
+      if (hasResponded) return;
+
+      if (parameters?.proofOfAge) {
+        const proof = proofOfAgeCredential;
+        if (!proof) {
+          reason = 'Proof of age not complete. Request to login cancelled';
+        } else {
+          try {
+            const decrypted = await decryptSeed(proof.content, decryptionKey);
+            const parsed = JSON.parse(decrypted);
+            const over18Check = isOver18(parsed.dob);
+
+            if (parameters.proofOfAge.over18 && !over18Check) {
+              reason = 'You must be 18 to access this site. Request to login cancelled.';
+            }
+          } catch (e) {
+            reason = 'Decryption error cannot prove the age of the user';
+          }
+        }
+      }
+
+      if (!reason && parameters?.livenessCheck) {
+        const liveness = livenessCheckCredential;
+        if (!liveness) {
+          reason = 'Liveness check not complete';
+        } else {
+          try {
+            await decryptSeed(liveness.content, decryptionKey);
+          } catch (e) {
+            reason = 'Unable to verify liveness check';
+          }
+        }
+      }
+
+      if (reason) {
+        setHasResponded(true);
+        setErrorMessage(reason);
+        setDeclined(true);
+        respondToRequest({
+          requestId: pendingRequest._id,
+          status: 'declined',
+          reason,
+        });
+        startCountdown(() => {
+          setDeclined(false);
+          setVisible(false);
+          setRefreshToken((k) => k + 1);
+          setErrorMessage(null);
+          setHasResponded(false);
+        });
+      }
+    };
+
+    checkCredentials();
+  }, [pendingRequest, proofOfAgeCredential, livenessCheckCredential, decryptionKey, hasResponded]);
 
   const startCountdown = (onComplete: () => void) => {
     setCountdown(5);
@@ -56,6 +165,7 @@ export default function LoginRequestModal() {
 
   const handleResponse = async (status: 'accepted' | 'declined') => {
     if (!pendingRequest) return;
+    if (declined && status === 'declined') return;
 
     await respondToRequest({ requestId: pendingRequest._id, status });
 
@@ -76,15 +186,10 @@ export default function LoginRequestModal() {
     }
   };
 
-  if (shortWunderId === null) return null;
+  if (wunderId === null || userId === null) return null;
 
   return (
-    <Modal
-      animationType="fade"
-      transparent
-      visible={visible}
-      onRequestClose={() => setVisible(false)}
-    >
+    <Modal animationType="fade" transparent visible={visible}>
       <View style={styles.overlay}>
         <View style={styles.modal}>
           {pendingRequest || accepted || declined ? (
@@ -96,7 +201,9 @@ export default function LoginRequestModal() {
                 </Text>
               ) : declined ? (
                 <Text style={styles.message}>
-                  {`You have declined to login to ${siteName}, the request has been cancelled.\n\nClosing in ${countdown}`}
+                  {errorMessage
+                    ? `${errorMessage}\n\nClosing in ${countdown}`
+                    : `You have declined to login to ${siteName}, the request has been cancelled.\n\nClosing in ${countdown}`}
                 </Text>
               ) : (
                 <>

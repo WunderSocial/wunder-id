@@ -49,6 +49,8 @@ export default defineSchema({
     createdAt: v.number(),
     expiresAt: v.number(),
     requestingSite: v.string(),
+    parameters: v.optional(v.any()),
+    reason: v.optional(v.string()),
   }).index('by_wunderId', ['wunderId']),
 });
 

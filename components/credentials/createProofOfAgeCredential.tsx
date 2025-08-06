@@ -62,23 +62,14 @@ const CreateProofOfAgeCredential = () => {
     loadDobFromProfile();
   }, [profileCredential]);
 
-  // Helper to check if over 18 based on dob string (expected "YYYY-MM-DD" or "DD-MM-YYYY")
-  // Assuming dob is in "DD-MM-YYYY" format from DateOfBirthPicker, so we parse accordingly:
-  const isOver18 = (dobStr: string) => {
-    // Convert "DD-MM-YYYY" to a Date object
+  // Helper to convert DD-MM-YYYY to ISO YYYY-MM-DD format
+  const convertToISO = (dobStr: string) => {
     const parts = dobStr.split('-');
-    if (parts.length !== 3) return false;
-    const day = parseInt(parts[0], 10);
-    const month = parseInt(parts[1], 10) - 1; // JS months 0-indexed
-    const year = parseInt(parts[2], 10);
-
-    const birthDate = new Date(year, month, day);
-    if (isNaN(birthDate.getTime())) return false;
-
-    const now = new Date();
-    const eighteenYearsAgo = new Date(now.getFullYear() - 18, now.getMonth(), now.getDate());
-
-    return birthDate <= eighteenYearsAgo;
+    if (parts.length !== 3) return '';
+    const day = parts[0].padStart(2, '0');
+    const month = parts[1].padStart(2, '0');
+    const year = parts[2];
+    return `${year}-${month}-${day}`; // ISO format YYYY-MM-DD
   };
 
   const handleConfirm = async () => {
@@ -102,14 +93,18 @@ const CreateProofOfAgeCredential = () => {
       expiryDate.setFullYear(expiryDate.getFullYear() + 1);
       const expiryISO = expiryDate.toISOString().split('T')[0]; // YYYY-MM-DD format
 
-      // Determine if user is over 18
-      const over18 = isOver18(dob);
+      // Convert DOB to ISO format before saving
+      const dobISO = convertToISO(dob);
+      if (!dobISO) {
+        Alert.alert('Invalid Date Format', 'Please select a valid date of birth.');
+        setLoading(false);
+        return;
+      }
 
-      // Add the over18 flag into the content
+      // Prepare proof of age data without over18 flag
       const proofOfAgeData = {
-        dob,
+        dob: dobISO,
         expiry: expiryISO,
-        over18,          // <-- NEW flag added here
       };
 
       const jsonContent = JSON.stringify(proofOfAgeData);

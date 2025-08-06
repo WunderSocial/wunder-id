@@ -6,8 +6,9 @@ export const sendLoginRequest = mutation({
   args: {
     wunderId: v.string(),
     requestingSite: v.string(),
+    parameters: v.optional(v.any()),
   },
-  handler: async (ctx, { wunderId, requestingSite }) => {
+  handler: async (ctx, { wunderId, requestingSite, parameters }) => {
     const user = await ctx.db
       .query('users')
       .withIndex('by_username', (q) => q.eq('username', wunderId))
@@ -32,6 +33,7 @@ export const sendLoginRequest = mutation({
       status: 'pending',
       createdAt: Date.now(),
       expiresAt: Date.now() + 60_000,
+      parameters,
     });
 
     await ctx.scheduler.runAfter(
