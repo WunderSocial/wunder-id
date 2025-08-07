@@ -41,40 +41,43 @@ const CreateLivenessCheckCredential = () => {
         return;
       }
 
-      if (!convexUserId) {
-        throw new Error('Missing Convex user ID');
-      }
+      if (data.type === 'LIVENESS_RESULT' && data.result) {
+        if (!convexUserId) throw new Error('Missing Convex user ID');
 
-      const decryptionKey = await SecureStore.getItemAsync('decryptionKey');
-      if (!decryptionKey) {
-        throw new Error('Missing decryption key');
-      }
+        const decryptionKey = await SecureStore.getItemAsync('decryptionKey');
+        if (!decryptionKey) throw new Error('Missing decryption key');
 
-      if (data.status && data.status.startsWith('PASS')) {
-        // Save full payload as encrypted JSON
-        const jsonContent = JSON.stringify(data);
-        const encryptedContent = await encryptSeed(jsonContent, decryptionKey);
+        const { status } = data.result;
+        if (status && status.startsWith('PASS')) {
+          const jsonContent = JSON.stringify(data.result);
+          const encryptedContent = await encryptSeed(jsonContent, decryptionKey);
 
-        await issueCredential({
-          userId: convexUserId as unknown as Id<'users'>,
-          type: CREDENTIAL_TYPES.LIVENESS_CHECK,
-          content: encryptedContent,
-        });
+          await issueCredential({
+            userId: convexUserId as unknown as Id<'users'>,
+            type: CREDENTIAL_TYPES.LIVENESS_CHECK,
+            content: encryptedContent,
+          });
 
-        Alert.alert('Success', 'Liveness Check credential saved.', [
-          { text: 'OK', onPress: () => navigation.goBack() },
-        ]);
-      } else {
-        Alert.alert(
-          'Liveness Check Failed',
-          'Please try again in better lighting or adjust your camera.'
-        );
+          setWebviewVisible(false);
+          Alert.alert('Success', 'Liveness Check credential saved.', [
+            { text: 'OK', onPress: () => navigation.goBack() },
+          ]);
+          return;
+        } else {
+          setWebviewVisible(false);
+          Alert.alert(
+            'Liveness Check Failed',
+            'Please try again in better lighting or adjust your camera.'
+          );
+          return;
+        }
       }
     } catch (error) {
       console.error('Error handling liveness result:', error);
       Alert.alert('Error', String(error));
-    } finally {
       setWebviewVisible(false);
+      setLoading(false);
+    } finally {
       setLoading(false);
     }
   };
@@ -116,30 +119,31 @@ const CreateLivenessCheckCredential = () => {
         disabled={loading}
       />
 
-      <Modal visible={webviewVisible} animationType="slide">
-        {convexUserId && (
-          <WebView
-            source={{ uri: `https://wunder-liveness-check.vercel.app/liveness?id=${convexUserId}` }}
-            onMessage={handleMessage}
-            javaScriptEnabled
-            domStorageEnabled
-            startInLoadingState
-            allowsInlineMediaPlayback
-            mediaPlaybackRequiresUserAction={false}
-            allowsFullscreenVideo
-            allowsCameraAccess
-            allowsMicrophoneAccess
-            injectedJavaScript={`
-              (function() {
-                if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-                  window.ReactNativeWebView.postMessage("✅ getUserMedia available");
-                } else {
-                  window.ReactNativeWebView.postMessage("❌ getUserMedia not available");
-                }
-              })();
-            `}
-          />
-        )}
+      <Modal visible={webviewVisible} animationType="slide" transparent={false}>
+        <View style={{ flex: 1, backgroundColor: '#000' }}>
+          <View style={{ padding: 10 }}>
+            <WunderButton
+              title="Cancel"
+              onPress={() => setWebviewVisible(false)}
+              variant="secondary"
+              style={styles.closeBtn}
+            />
+          </View>
+          {convexUserId && (
+            <WebView
+              source={{ uri: `https://wunder-liveness-check.vercel.app/liveness?id=${convexUserId}` }}
+              onMessage={handleMessage}
+              javaScriptEnabled
+              domStorageEnabled
+              startInLoadingState
+              allowsInlineMediaPlayback
+              mediaPlaybackRequiresUserAction={false}
+              allowsFullscreenVideo
+              allowsCameraAccess
+              allowsMicrophoneAccess
+            />
+          )}
+        </View>
       </Modal>
     </View>
   );
@@ -161,6 +165,9 @@ const styles = StyleSheet.create({
   btn: {
     marginTop: 20,
   },
+  closeBtn: {
+    marginTop: 40,
+  }
 });
 
 export default CreateLivenessCheckCredential;

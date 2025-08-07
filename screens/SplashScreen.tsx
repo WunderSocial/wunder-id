@@ -1,52 +1,53 @@
 import React, { useEffect } from 'react';
-import { ActivityIndicator, StyleSheet, View } from 'react-native';
+import { Alert, StyleSheet, View } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
 import * as LocalAuthentication from 'expo-local-authentication';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '@navigation/types';
 import CustomLoader from '@components/CustomLoader';
+import { useConvex } from 'convex/react';
+import { api } from 'convex/_generated/api';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Splash'>;
 
 const SplashScreen = ({ navigation }: Props) => {
+  const convex = useConvex();
+
   useEffect(() => {
     const checkAuth = async () => {
       const accountComplete = await SecureStore.getItemAsync('accountComplete');
 
       if (!accountComplete) {
-        // Account not completed – wipe all known secure items
-        const keysToPurge = [
-          'walletAddress',
-          'encryptedSeed',
-          'encryptedPrivateKey',
-          'passwordHash',
-          'convexUserId',
-          'userId',
-          'decryptionKey',
-          'wunderId',
-          'hashedDeviceFingerprint',
-          'restoredSeedPhrase',
-          'isRestoring',
-          'pushToken',
-          'userPinHash',
-          'biometricsEnabled',
-          'biometricEncryptionKey',
-          'accountComplete', // clean this too just in case
-        ];
-
-        await Promise.all(keysToPurge.map((key) => SecureStore.deleteItemAsync(key)));
-
-        navigation.replace('Onboarding', { screen: 'AccountChoice' });
+        await resetAndNavigate();
         return;
       }
 
-      const encryptedSeed = await SecureStore.getItemAsync('encryptedSeed');
+      let walletAddress = await SecureStore.getItemAsync('walletAddress');
+
+      if (!walletAddress) {
+        await resetAndNavigate();
+        return;
+      }
+
+      // Normalize to lowercase
+      walletAddress = walletAddress.toLowerCase();
+
+      try {
+        const user = await convex.query(
+          api.getUserByWallet.getUserByWallet,
+          { walletAddress }
+        );
+
+        if (!user || !user._id) {
+          showResetAlert();
+          return;
+        }
+      } catch (err) {
+        showResetAlert();
+        return;
+      }
+
       const biometricsEnabled = await SecureStore.getItemAsync('biometricsEnabled');
-
-      if (!encryptedSeed) {
-        navigation.replace('Onboarding', { screen: 'AccountChoice' });
-        return;
-      }
 
       if (biometricsEnabled === 'true') {
         const result = await LocalAuthentication.authenticateAsync({
@@ -60,6 +61,44 @@ const SplashScreen = ({ navigation }: Props) => {
       }
 
       navigation.replace('EnterPin');
+    };
+
+    const resetAndNavigate = async () => {
+      const keysToPurge = [
+        'walletAddress',
+        'encryptedSeed',
+        'encryptedPrivateKey',
+        'passwordHash',
+        'convexUserId',
+        'userId',
+        'decryptionKey',
+        'wunderId',
+        'hashedDeviceFingerprint',
+        'restoredSeedPhrase',
+        'isRestoring',
+        'pushToken',
+        'userPinHash',
+        'biometricsEnabled',
+        'biometricEncryptionKey',
+        'accountComplete',
+      ];
+
+      await Promise.all(keysToPurge.map((key) => SecureStore.deleteItemAsync(key)));
+      navigation.replace('Onboarding', { screen: 'AccountChoice' });
+    };
+
+    const showResetAlert = () => {
+      Alert.alert(
+        'Account Error',
+        'We couldn’t find your Wunder ID. Please reset the app and start again.',
+        [
+          {
+            text: 'Reset App',
+            onPress: resetAndNavigate,
+            style: 'destructive',
+          },
+        ]
+      );
     };
 
     checkAuth();
