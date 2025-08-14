@@ -20,7 +20,7 @@ const CreateProofOfAgeCredential = () => {
   const [userIdStr, setUserIdStr] = useState<string | null>(null);
 
   const navigation = useNavigation<RootStackNavigationProp>();
-  const issueCredential = useMutation(api.credentials.issueCredential);
+  const issueCredential = useMutation(api.functions.mobile.credentials.issueCredential);
 
   // Get userId from secure store
   useEffect(() => {
@@ -31,7 +31,7 @@ const CreateProofOfAgeCredential = () => {
 
   // Load user's basic profile to get DOB pre-fill
   const profileCredential = useQuery(
-    api.credentials.hasCredential,
+    api.functions.mobile.credentials.hasCredential,
     userIdStr
       ? {
           userId,

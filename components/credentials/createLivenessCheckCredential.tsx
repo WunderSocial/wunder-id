@@ -14,13 +14,13 @@ import type { RootStackParamList } from '@navigation/types';
 type RootStackNavigationProp = NavigationProp<RootStackParamList>;
 
 const CreateLivenessCheckCredential = () => {
-  const [convexUserId, setConvexUserId] = useState<string | null>(null);
+  const [convexUserId, setConvexUserId] = useState<string | null>(null); 
   const [webviewVisible, setWebviewVisible] = useState(false);
   const [loading, setLoading] = useState(false);
   const [lastResult, setLastResult] = useState<any | null>(null);
 
   const navigation = useNavigation<RootStackNavigationProp>();
-  const issueCredential = useMutation(api.credentials.issueCredential);
+  const issueCredential = useMutation(api.functions.mobile.credentials.issueCredential);
 
   useEffect(() => {
     SecureStore.getItemAsync('convexUserId').then(setConvexUserId);
