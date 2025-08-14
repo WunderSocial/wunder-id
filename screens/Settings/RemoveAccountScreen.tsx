@@ -42,7 +42,7 @@ const RemoveAccountScreen = () => {
   const [showPinModal, setShowPinModal] = useState(false);
   const [enteredPin, setEnteredPin] = useState('');
 
-  const deregisterDevice = useMutation(api.deregisterDevice.deregisterDevice);
+  const deregisterDevice = useMutation(api.functions.mobile.deregisterDevice.deregisterDevice);
 
   const handleReset = async () => {
     setShowPinModal(true);

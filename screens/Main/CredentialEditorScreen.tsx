@@ -11,8 +11,10 @@ import { useRoute, useFocusEffect } from '@react-navigation/native';
 
 import LoggedInHeader from '@components/Main/LoggedInHeader';
 import CreateEditProfileCredential from '@components/credentials/createEditProfileCredential';
-import CreateEditProofOfAgeCredential from '@components/credentials/createProofOfAgeCredential';
+// import CreateEditProofOfAgeCredential from '@components/credentials/createProofOfAgeCredential';
 import CreateEditLivenessCheckCredential from '@components/credentials/createLivenessCheckCredential';
+import IDVerification from '@components/verification/IDVerification';
+
 
 import { MainDrawerParamList } from '@navigation/types';
 import { RouteProp } from '@react-navigation/native';
@@ -44,7 +46,7 @@ const CredentialEditorScreen = () => {
       case CREDENTIAL_TYPES.BASIC_PROFILE:
         return <CreateEditProfileCredential key={`profile-${focusKey}`} />;
       case CREDENTIAL_TYPES.PROOF_OF_AGE:
-        return <CreateEditProofOfAgeCredential key={`age-${focusKey}`} />;
+        return <IDVerification key={`age-${focusKey}`} />;
       case CREDENTIAL_TYPES.LIVENESS_CHECK:
         return <CreateEditLivenessCheckCredential key={`liveness-${focusKey}`} />;
       default:

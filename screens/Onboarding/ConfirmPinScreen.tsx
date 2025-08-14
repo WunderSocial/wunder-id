@@ -32,7 +32,7 @@ const ConfirmPinScreen = ({ route, navigation }: Props) => {
   const [attemptCount, setAttemptCount] = useState(0);
 
   const { pin: originalPin } = route.params;
-  const issueCredential = useMutation(api.credentials.issueCredential);
+  const issueCredential = useMutation(api.functions.mobile.credentials.issueCredential);
 
   const handleCreateWunderIdAndWalletCreds = async (
     userId: Id<'users'>,

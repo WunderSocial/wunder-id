@@ -1,4 +1,4 @@
-import { internalAction } from '../_generated/server';
+import { internalAction } from '../../_generated/server';
 import { v } from 'convex/values';
 
 export const sendPushNotification = internalAction({

@@ -27,7 +27,7 @@ const RestoreWithSeedScreen = () => {
   const [error, setError] = useState('');
   const convex = useConvex();
 
-  const registerDevice = useMutation(api.registerDevice.registerDevice);
+  const registerDevice = useMutation(api.functions.mobile.registerDevice.registerDevice);
 
   const handleRestore = async () => {
     try {
@@ -50,7 +50,7 @@ const RestoreWithSeedScreen = () => {
       const hdNode = ethers.Wallet.fromPhrase(cleaned);
       const walletAddress = hdNode.address.toLowerCase();
 
-      const user = await convex.query(api.getUserByWallet.getUserByWallet, { walletAddress });
+      const user = await convex.query(api.functions.mobile.getUserByWallet.getUserByWallet, { walletAddress });
       if (!user) {
         Alert.alert('No Account Found', 'We couldn’t find an account with that seed phrase.');
         return;

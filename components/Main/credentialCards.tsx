@@ -63,7 +63,7 @@ const CredentialCards = () => {
   const [selectedContent, setSelectedContent] = useState<Record<string, any> | null>(null);
   const [addModalVisible, setAddModalVisible] = useState(false);
 
-  const deleteCredential = useMutation(api.credentials.deleteCredentialByType);
+  const deleteCredential = useMutation(api.functions.mobile.credentials.deleteCredentialByType);
 
   useEffect(() => {
     const loadUser = async () => {
@@ -77,23 +77,23 @@ const CredentialCards = () => {
   }, []);
 
   const wunderIdCred = useQuery(
-    api.credentials.hasCredential,
+    api.functions.mobile.credentials.hasCredential,
     userId ? { userId, type: CREDENTIAL_TYPES.WUNDER_ID || 'wunder_id' } : 'skip'
   );
   const walletAddressCred = useQuery(
-    api.credentials.hasCredential,
+    api.functions.mobile.credentials.hasCredential,
     userId ? { userId, type: CREDENTIAL_TYPES.WALLET_ADDRESS || 'wallet_address' } : 'skip'
   );
   const basicProfile = useQuery(
-    api.credentials.hasCredential,
+    api.functions.mobile.credentials.hasCredential,
     userId ? { userId, type: CREDENTIAL_TYPES.BASIC_PROFILE } : 'skip'
   );
   const livenessCheck = useQuery(
-    api.credentials.hasCredential,
+    api.functions.mobile.credentials.hasCredential,
     userId ? { userId, type: CREDENTIAL_TYPES.LIVENESS_CHECK } : 'skip'
   );
   const proofOfAge = useQuery(
-    api.credentials.hasCredential,
+    api.functions.mobile.credentials.hasCredential,
     userId ? { userId, type: CREDENTIAL_TYPES.PROOF_OF_AGE } : 'skip'
   );
 

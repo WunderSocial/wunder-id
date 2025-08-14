@@ -26,7 +26,7 @@ const CreateEditProfileCredential = () => {
   const [userIdStr, setUserIdStr] = useState<string | null>(null);
 
   const navigation = useNavigation<RootStackNavigationProp>();
-  const issueCredential = useMutation(api.credentials.issueCredential);
+  const issueCredential = useMutation(api.functions.mobile.credentials.issueCredential);
 
   const didAttemptEditDob = useRef(false);
 
@@ -37,7 +37,7 @@ const CreateEditProfileCredential = () => {
   const userId = userIdStr as unknown as Id<'users'>;
 
   const profileCredential = useQuery(
-    api.credentials.hasCredential,
+    api.functions.mobile.credentials.hasCredential,
     userIdStr
       ? {
           userId,
@@ -47,7 +47,7 @@ const CreateEditProfileCredential = () => {
   );
 
   const proofOfAgeCredential = useQuery(
-    api.credentials.hasCredential,
+    api.functions.mobile.credentials.hasCredential,
     userIdStr
       ? {
           userId,

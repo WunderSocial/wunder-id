@@ -40,7 +40,7 @@ const WunderIdCard = () => {
   }, []);
 
   const profileCredential = useQuery(
-    api.credentials.hasCredential,
+    api.functions.mobile.credentials.hasCredential,
     userId
       ? {
           userId,
@@ -51,7 +51,7 @@ const WunderIdCard = () => {
 
   // For Proof of Age credential (DOB verified)
   const proofOfAgeCredential = useQuery(
-    api.credentials.hasCredential,
+    api.functions.mobile.credentials.hasCredential,
     userId
       ? {
           userId,
@@ -62,7 +62,7 @@ const WunderIdCard = () => {
 
   // For Liveness Check credential (Name verified)
   const livenessCredential = useQuery(
-    api.credentials.hasCredential,
+    api.functions.mobile.credentials.hasCredential,
     userId
       ? {
           userId,

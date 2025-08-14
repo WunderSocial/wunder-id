@@ -28,7 +28,7 @@ const UsernameScreen = () => {
     if (!username) return;
     setIsChecking(true);
     try {
-      const available = await convex.query(api.checkUsernameAvailable.checkUsernameAvailable, {
+      const available = await convex.query(api.functions.mobile.checkUsernameAvailable.checkUsernameAvailable, {
         username,
       });
       setIsAvailable(available);

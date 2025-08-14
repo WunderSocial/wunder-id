@@ -1,5 +1,5 @@
-import { mutation } from '../_generated/server';
-import { internal } from '../_generated/api';
+import { mutation } from '../../_generated/server';
+import { internal } from '../../_generated/api';
 import { v } from 'convex/values';
 
 export const sendLoginRequest = mutation({
@@ -38,7 +38,7 @@ export const sendLoginRequest = mutation({
 
     await ctx.scheduler.runAfter(
       0,
-      internal.functions.sendPushNotification.sendPushNotification,
+      internal.functions.web.sendPushNotification.sendPushNotification,
       {
         pushToken: device.pushToken,
         loginRequestId,
