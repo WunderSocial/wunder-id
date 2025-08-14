@@ -45,22 +45,25 @@ export default function LoginRequestModal() {
 
   const baseWunderId = wunderId ? wunderId.split('.')[0] : null;
 
+  // ✅ updated paths to the new Convex API namespaces
   const pendingRequest = useQuery(
-    api.getPendingRequest.getPendingRequest,
+    api.functions.mobile.getPendingRequest.getPendingRequest,
     baseWunderId ? { wunderId: baseWunderId, refreshToken } : 'skip'
   );
 
   const proofOfAgeCredential = useQuery(
-    api.credentials.hasCredential,
+    api.functions.mobile.credentials.hasCredential,
     userId ? { userId: userId as Id<'users'>, type: 'proof_of_age' } : 'skip'
   );
 
   const livenessCheckCredential = useQuery(
-    api.credentials.hasCredential,
+    api.functions.mobile.credentials.hasCredential,
     userId ? { userId: userId as Id<'users'>, type: 'liveness_check' } : 'skip'
   );
 
-  const respondToRequest = useMutation(api.respondToRequest.respondToRequest);
+  const respondToRequest = useMutation(
+    api.functions.mobile.respondToRequest.respondToRequest
+  );
 
   useEffect(() => {
     if (pendingRequest) {

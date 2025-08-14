@@ -34,7 +34,7 @@ const SplashScreen = ({ navigation }: Props) => {
 
       try {
         const user = await convex.query(
-          api.getUserByWallet.getUserByWallet,
+          api.functions.mobile.getUserByWallet.getUserByWallet,
           { walletAddress }
         );
 

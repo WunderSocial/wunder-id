@@ -39,8 +39,8 @@ const PasswordSetupScreen = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const registerUser = useMutation(api.registerUser.registerUser);
-  const registerDevice = useMutation(api.registerDevice.registerDevice);
+  const registerUser = useMutation(api.functions.mobile.registerUser.registerUser);
+  const registerDevice = useMutation(api.functions.mobile.registerDevice.registerDevice);
 
   useEffect(() => {
     const requestPushPermission = async () => {
