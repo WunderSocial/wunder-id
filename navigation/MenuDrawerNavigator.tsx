@@ -9,6 +9,7 @@ import SettingsScreen from '@screens/Settings/SettingsScreen';
 import SecurityScreen from '@screens/Settings/SecurityScreen';
 import RemoveAccountScreen from '@screens/Settings/RemoveAccountScreen';
 import CredentialEditorScreen from '@screens/Main/CredentialEditorScreen';
+import IDVerificationScreen from '@screens/Main/IDVerificationScreen';
 import Logo from '@components/WunderLogo';
 
 const Drawer = createDrawerNavigator();
@@ -54,6 +55,7 @@ const MainDrawerNavigator = () => (
     <Drawer.Screen name="Security" component={SecurityScreen} options={{ drawerLabel: 'Security Details' }} />
     <Drawer.Screen name="RemoveAccount" component={RemoveAccountScreen} options={{ drawerLabel: 'Remove Account' }} />
     <Drawer.Screen name="CredentialEditor" component={CredentialEditorScreen} options={{ drawerItemStyle: { display: 'none' } }} />
+    <Drawer.Screen name="IDVerification" component={IDVerificationScreen} options={{ drawerItemStyle: { display: 'none' } }} />
   </Drawer.Navigator>
 );
 

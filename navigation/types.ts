@@ -28,4 +28,5 @@ export type MainDrawerParamList = {
   Security: undefined;
   RemoveAccount: undefined;
   CredentialEditor: { credentialType: string };
+  IDVerification: undefined;
 };

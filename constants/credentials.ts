@@ -4,5 +4,6 @@ export const CREDENTIAL_TYPES = {
   BASIC_PROFILE: 'basic_profile',
   PROOF_OF_AGE: 'proof_of_age',
   LIVENESS_CHECK: 'liveness_check',
+  ID_VERIFICATION: 'id_verification',
   
 } as const;
